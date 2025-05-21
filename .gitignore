@@ -1,0 +1,38 @@
+# Виртуальное окружение Python
+venv/
+env/
+.env
+
+# Кеш и временные файлы
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Логи
+*.log
+
+# Базы данных
+*.sqlite3
+*.db
+
+# Файлы настроек с конфиденциальной информацией
+.env.production
+.env.local
+
+# Директории Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Сборка фронтенда
+/frontend/dist/
+/frontend/build/
+
+# Другие файлы, которые не нужно отслеживать
+.DS_Store
+*.swp
+*.swo

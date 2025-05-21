@@ -1,0 +1,97 @@
+.queue-display {
+  background-color: #1a237e;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+.display-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.display-header h1 {
+  font-size: 2.2rem;
+  margin: 0;
+}
+
+.current-time {
+  font-size: 2rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.queue-entries {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 30px 0;
+}
+
+.loading-message, .error-message, .no-entries {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 50px 0;
+}
+
+.error-message {
+  color: #ff6b6b;
+}
+
+.queue-entry {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.entry-number {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #42a5f5;
+}
+
+.entry-arrow {
+  font-size: 2.5rem;
+  color: #4caf50;
+}
+
+.entry-desk {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ffeb3b;
+}
+
+.display-footer {
+  text-align: center;
+  font-size: 1.5rem;
+  padding-top: 20px;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* При необходимости добавим медиа-запросы для адаптивности */
+@media (max-width: 768px) {
+  .display-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .current-time {
+    font-size: 1.3rem;
+  }
+  
+  .queue-entries {
+    grid-template-columns: 1fr;
+  }
+}

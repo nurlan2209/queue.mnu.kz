@@ -1,0 +1,109 @@
+/* Базовый сброс стилей и общие переменные */
+:root {
+  --primary-color: #bf0603;
+  --secondary-color: #001427;
+  --accent-color: #f54241;
+  --background-color: #f9ecec;
+  --text-color: #1a1a1a;
+  --light-text: #5e6d7a;
+  --success-color: #4a8c5e;
+  --warning-color: #f4a261;
+  --danger-color: #bf0603;
+  --border-color: #d6dade;
+  --shadow-color: rgba(0, 20, 39, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Oswald', sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Oswald', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  text-decoration: none;
+}
+
+.btn-secondary2{
+    color: white;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(191, 6, 3, 0.1);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.btn-warning {
+  background-color: var(--warning-color);
+  color: var(--text-color);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.alert-danger {
+  background-color: rgba(191, 6, 3, 0.2);
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+}
+
+.alert-success {
+  background-color: rgba(74, 140, 94, 0.2);
+  border: 1px solid var(--success-color);
+  color: var(--success-color);
+}

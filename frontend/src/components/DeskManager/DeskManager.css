@@ -1,0 +1,79 @@
+.desk-manager {
+  padding: 20px;
+}
+
+.desk-manager h2 {
+  margin-bottom: 20px;
+}
+
+.desk-manager-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.desk-manager-loading {
+  padding: 20px;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.no-employees {
+  text-align: center;
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.desk-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.desk-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.employee-info h3 {
+  margin: 0 0 10px 0;
+}
+
+.employee-info p {
+  margin: 0 0 15px 0;
+  color: #666;
+}
+
+.desk-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.desk-edit {
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.desk-edit input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.desk-edit-actions {
+  display: flex;
+  gap: 10px;
+}

@@ -1,0 +1,29 @@
+.staff-login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  padding: 20px;
+  background-color: #f5f5f5;
+}
+
+.auth-container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-container h1 {
+  margin-bottom: 16px;
+  color: #333;
+  text-align: center;
+}
+
+.auth-description {
+  margin-bottom: 24px;
+  color: #666;
+  text-align: center;
+}
