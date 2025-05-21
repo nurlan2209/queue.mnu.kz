@@ -128,10 +128,6 @@ const AdmissionQueue = () => {
     <div className="admission-queue">
       <div className="queue-controls">
         <h2>{t('admissionQueue.title')}</h2>
-
-
-
-
       </div>
 
       {error && <div className="alert alert-danger">{error}</div>}

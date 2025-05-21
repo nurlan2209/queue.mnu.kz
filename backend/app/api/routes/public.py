@@ -6,9 +6,9 @@ from typing import List
 from app.database import get_db
 from app.models.queue import QueueEntry, QueueStatus
 from app.models.user import User
-from app.schemas.queue import PublicQueueCreate, QueueResponse, PublicQueueResponse  # Добавлен PublicQueueResponse
+from app.schemas.queue import PublicQueueCreate, QueueResponse, PublicQueueResponse
 from app.services.captcha import verify_captcha
-from app.services.queue import create_queue_entry, get_queue_count  # Добавлен get_queue_count, если он используется
+from app.services.queue import create_queue_entry, get_queue_count
 
 router = APIRouter(prefix="/public")
 
@@ -49,11 +49,10 @@ def get_employees(db: Session = Depends(get_db)):
     admission_employees = [emp for emp in all_employees if emp.role == "admission"]
     
     if not admission_employees:
-        logger.warning("No admission employees found in database")
+        # logger.warning("No admission employees found in database")
         return []  # Вместо ошибки 404 вернем пустой список
     
-    # Добавим логирование для отладки
-    logger.info(f"Found {len(admission_employees)} admission employees")
+    # logger.info(f"Found {len(admission_employees)} admission employees")
     return [{"name": emp.full_name} for emp in admission_employees]
 
 @router.post("/queue", response_model=QueueResponse)

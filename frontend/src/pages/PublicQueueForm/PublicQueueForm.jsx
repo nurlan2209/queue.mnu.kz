@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { createQueueEntry, getEmployees, queueAPI } from '../../api';
 import QueueStatusCheck from '../../components/QueueStatusCheck/QueueStatusCheck';
-import QueueTicket from '../../components/QueueTicket/QueueTicket'; // Импортируем новый компонент
+import QueueTicket from '../../components/QueueTicket/QueueTicket';
 import { useTranslation } from 'react-i18next';
 import './PublicQueueForm.css';
 
@@ -44,7 +44,7 @@ const PublicQueueForm = () => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     full_name: '',
-    phone: '',
+    phone: '+7', // Начинаем с +7
     programs: [],
     notes: '',
     assigned_employee_name: '',
@@ -56,12 +56,65 @@ const PublicQueueForm = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [queueCount, setQueueCount] = useState(null);
-  const [ticket, setTicket] = useState(null); // Добавляем состояние для талона
+  const [ticket, setTicket] = useState(null);
   const [categoryStates, setCategoryStates] = useState({
     bachelor: false,
     master: false,
     doctorate: false,
   });
+
+  const formatPhoneNumber = (value) => {
+    // Удаляем все нецифровые символы, кроме первого + если он есть
+    let digitsOnly = value.replace(/\D/g, '');
+    
+    // Добавляем 7 в начало, если его нет или номер начинается с 8
+    if (!digitsOnly.startsWith('7')) {
+      if (digitsOnly.startsWith('8')) {
+        digitsOnly = '7' + digitsOnly.substring(1);
+      } else {
+        digitsOnly = '7' + digitsOnly;
+      }
+    }
+    
+    // Ограничиваем до 11 цифр
+    digitsOnly = digitsOnly.substring(0, 11);
+    
+    // Форматируем строку с маской
+    let formattedNumber = '+7';
+    
+    if (digitsOnly.length > 1) {
+      // Добавляем код города/оператора
+      const areaCode = digitsOnly.substring(1, Math.min(4, digitsOnly.length));
+      formattedNumber += ' (' + areaCode;
+      
+      // Закрываем скобку после кода города, если код полный
+      if (digitsOnly.length >= 4) {
+        formattedNumber += ')';
+        
+        // Добавляем первую часть номера
+        if (digitsOnly.length > 4) {
+          formattedNumber += ' ' + digitsOnly.substring(4, Math.min(7, digitsOnly.length));
+          
+          // Добавляем первый дефис и следующие две цифры
+          if (digitsOnly.length > 7) {
+            formattedNumber += '-' + digitsOnly.substring(7, Math.min(9, digitsOnly.length));
+            
+            // Добавляем второй дефис и последние две цифры
+            if (digitsOnly.length > 9) {
+              formattedNumber += '-' + digitsOnly.substring(9, 11);
+            }
+          }
+        }
+      }
+    }
+    
+    return formattedNumber;
+  };
+
+  const handlePhoneChange = (e) => {
+    const formattedValue = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formattedValue });
+  };
 
   useEffect(() => {
     // Проверяем, есть ли талон в localStorage
@@ -151,7 +204,7 @@ const PublicQueueForm = () => {
       setSuccess(true);
       setFormData({
         full_name: '',
-        phone: '',
+        phone: '+7',
         programs: [],
         notes: '',
         assigned_employee_name: '',
@@ -229,7 +282,19 @@ const PublicQueueForm = () => {
             id="phone"
             name="phone"
             value={formData.phone}
-            onChange={handleChange}
+            onChange={handlePhoneChange}
+            onFocus={(e) => {
+              // При получении фокуса, если поле пустое, добавляем +7
+              if (!e.target.value) {
+                setFormData({ ...formData, phone: '+7' });
+              }
+              // Ставим курсор в конец
+              const input = e.target;
+              setTimeout(() => {
+                input.selectionStart = input.selectionEnd = input.value.length;
+              }, 0);
+            }}
+            placeholder="+7 (___) ___-__-__"
             required
           />
         </div>
