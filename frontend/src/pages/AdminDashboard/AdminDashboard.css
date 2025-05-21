@@ -1,98 +1,39 @@
+/* AdminDashboard.css */
 .admin-dashboard {
-  padding: 2rem 1rem;
-}
-
-.admin-dashboard h1 {
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  color: var(--primary-color);
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.dashboard-content {
-  display: flex;
-  gap: 2rem;
+  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.admin-main {
-  flex: 1;
-}
-
-.sidebar {
-  width: 350px;
-}
-
-.sidebar-section {
+.dashboard-tabs {
+  display: flex;
+  margin-bottom: 20px;
   background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px var(--shadow-color);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  position: sticky;
-  top: 2rem;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.sidebar-section h2 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  color: var(--text-color);
+.tab-btn {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 16px;
+  flex: 1;
+  transition: background-color 0.3s;
 }
 
-.instruction-card {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
-  background-color: rgba(191, 6, 3, 0.05);
+.tab-btn:hover {
+  background-color: rgba(63, 81, 181, 0.1);
 }
 
-.instruction-card h3 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-  color: var(--primary-color);
+.tab-btn.active {
+  background-color: #3f51b5;
+  color: white;
 }
 
-.instruction-card ul {
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.instruction-card li {
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.note-card {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
-  background-color: rgba(244, 162, 97, 0.1);
-}
-
-.note-card p {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.note-card ul {
-  padding-left: 1.5rem;
-}
-
-.note-card li {
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-/* Responsive */
-@media (max-width: 992px) {
-  .dashboard-content {
-    flex-direction: column;
-  }
-  
-  .sidebar {
-    width: 100%;
-  }
+.dashboard-content {
+  margin-top: 20px;
 }

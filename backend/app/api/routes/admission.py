@@ -8,7 +8,7 @@ from app.models.user import User, EmployeeStatus  # Добавляем импо�
 from app.models.queue import QueueEntry, QueueStatus
 from app.schemas import QueueResponse, QueueUpdate, UserResponse  # Добавляем импорт UserResponse
 from app.security import get_admission_user
-from app.services.queue import update_queue_entry, get_all_queue_entries
+from app.services.queue import update_queue_entry, get_all_queue_entries, start_processing_time, end_processing_time
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -123,6 +123,9 @@ def call_next_applicant(
     next_entry.status = QueueStatus.IN_PROGRESS
     current_user.status = EmployeeStatus.BUSY.value
     
+    # Вызов функции для начала отсчета времени обработки
+    start_processing_time(db, next_entry.id)
+    
     db.commit()
     db.refresh(next_entry)
     db.refresh(current_user)
@@ -156,6 +159,9 @@ def complete_current_applicant(
         # Если есть активная заявка, меняем её статус на COMPLETED
         current_entry.status = QueueStatus.COMPLETED
         db.add(current_entry)  # Убедимся, что изменения будут сохранены
+        
+        # Вызов функции для расчета времени обработки
+        end_processing_time(db, current_entry.id)
     
     # Меняем статус сотрудника на AVAILABLE
     current_user.status = EmployeeStatus.AVAILABLE.value

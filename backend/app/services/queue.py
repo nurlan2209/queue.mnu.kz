@@ -63,3 +63,34 @@ def get_queue_status(db: Session, phone: str) -> Optional[QueueStatusResponse]:
         status=queue_entry.status,
         created_at=queue_entry.created_at
     )
+
+def start_processing_time(db: Session, queue_id: str):
+    """Start processing time for a queue entry"""
+    queue_entry = db.query(QueueEntry).filter(QueueEntry.id == queue_id).first()
+    if not queue_entry:
+        return None
+    
+    queue_entry.status = QueueStatus.IN_PROGRESS
+    queue_entry.updated_at = func.now()
+    db.commit()
+    db.refresh(queue_entry)
+    return queue_entry
+
+def end_processing_time(db: Session, queue_id: str):
+    """End processing time and calculate the duration"""
+    queue_entry = db.query(QueueEntry).filter(QueueEntry.id == queue_id).first()
+    if not queue_entry:
+        return None
+    
+    # Calculate processing time in seconds
+    if queue_entry.updated_at:
+        # Получаем текущее время
+        current_time = db.query(func.now()).scalar()
+        # Вычисляем разницу в секундах
+        processing_time = int((current_time - queue_entry.updated_at).total_seconds())
+        queue_entry.processing_time = processing_time
+    
+    queue_entry.status = QueueStatus.COMPLETED
+    db.commit()
+    db.refresh(queue_entry)
+    return queue_entry

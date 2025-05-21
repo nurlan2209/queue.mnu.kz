@@ -93,8 +93,28 @@ export const admissionAPI = {
 
 export const adminAPI = {
   createAdmissionStaff: (userData) => api.post('/admin/create-admission', userData),
-  getEmployees: () => api.get('/admin/employees'),
+  getEmployees: async () => {
+    try {
+      const response = await api.get('/admin/employees');
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      return [];
+    }
+  },
   updateEmployee: (employeeId, data) => api.put(`/admin/employees/${employeeId}`, data),
+  deleteEmployee: (employeeId) => api.delete(`/admin/employees/${employeeId}`),
+  getAllQueue: async (params) => {
+    try {
+      const response = await api.get('/admin/queue', { params });
+      // Убедитесь, что возвращается массив
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Error fetching queue:', error);
+      return [];
+    }
+  },
+  exportQueueToExcel: () => api.get('/admin/queue/export', { responseType: 'blob' })
 };
 
 
