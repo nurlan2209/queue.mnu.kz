@@ -16,10 +16,11 @@ def create_queue_entry(db: Session, queue: PublicQueueCreate) -> QueueResponse:
         queue_number=queue_number,
         full_name=queue.full_name,
         phone=queue.phone,
-        programs=queue.programs,  # SQLAlchemy должен автоматически преобразовать это в JSON
+        programs=queue.programs,
         status=QueueStatus.WAITING,
         notes=queue.notes,
-        assigned_employee_name=queue.assigned_employee_name
+        assigned_employee_name=queue.assigned_employee_name,
+        form_language=queue.form_language 
     )
     db.add(db_queue)
     db.commit()

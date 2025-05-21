@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import ProgramTranslator from '../ProgramTranslator/ProgramTranslator';
 import './QueueTicket.css';
 
 const QueueTicket = ({ ticket, onReturn }) => {
@@ -67,9 +68,16 @@ const QueueTicket = ({ ticket, onReturn }) => {
             <span className="info-value">{ticket.phone}</span>
           </div>
           
-          <div className="info-row">
-            <span className="info-label">{t('queueTicket.programs')}:</span>
-            <span className="info-value">{formatPrograms(ticket.programs)}</span>
+          <div className="ticket-info-row">
+            <span className="ticket-info-label">{t('queueTicket.programs')}</span>
+            <span className="ticket-info-value">
+              {ticket.programs.map((program, index) => (
+                <React.Fragment key={program}>
+                  <ProgramTranslator programCode={program} formLanguage={ticket.form_language} />
+                  {index < ticket.programs.length - 1 && ', '}
+                </React.Fragment>
+              ))}
+            </span>
           </div>
           
           <div className="info-row">

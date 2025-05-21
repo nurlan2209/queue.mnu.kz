@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import { FaSearch, FaFilter, FaSort, FaChevronDown } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import './AdmissionQueue.css';
+import ProgramTranslator from '../ProgramTranslator/ProgramTranslator';
 
 const AdmissionQueue = () => {
   const { t, i18n } = useTranslation();
@@ -155,9 +156,15 @@ const AdmissionQueue = () => {
                 <p>
                   <strong>{t('admissionQueue.card.phone')}</strong> {entry.phone}
                 </p>
-                <p>
-                  <strong>{t('admissionQueue.card.programs')}</strong> {entry.programs.join(', ')}
-                </p>
+                  <p>
+                    <strong>{t('admissionQueue.card.programs')}</strong>{' '}
+                    {entry.programs.map((program, index) => (
+                      <React.Fragment key={program}>
+                        <ProgramTranslator programCode={program} formLanguage={entry.form_language} />
+                        {index < entry.programs.length - 1 && ', '}
+                      </React.Fragment>
+                    ))}
+                  </p>
                 <p>
                   <strong>{t('admissionQueue.card.time')}</strong>{' '}
                   {new Date(entry.created_at).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US', {

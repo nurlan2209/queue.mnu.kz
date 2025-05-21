@@ -9,9 +9,11 @@ class QueueBase(BaseModel):
     programs: List[str]
     notes: Optional[str] = None
     assigned_employee_name: Optional[str] = None
+    form_language: Optional[str] = None
 
 class QueueCreate(QueueBase):
     programs: List[str]
+    form_language: Optional[str] = None
 
 class QueueUpdate(QueueBase):
     status: Optional[QueueStatus] = None
@@ -24,6 +26,7 @@ class PublicQueueCreate(BaseModel):
     assigned_employee_name: Optional[str] = None  # Добавлено
     captcha_token: Optional[str] = None
     processing_time: Optional[int] = None
+    form_language: Optional[str] = None
 
 class QueueResponse(QueueBase):
     id: str

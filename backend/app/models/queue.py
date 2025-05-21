@@ -25,3 +25,4 @@ class QueueEntry(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     processing_time = Column(Integer, nullable=True)
+    form_language = Column(String, nullable=True)

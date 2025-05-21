@@ -73,6 +73,24 @@ const EmployeesList = () => {
     }
   };
 
+  // Функция для перевода статуса сотрудника
+  const getTranslatedStatus = (status) => {
+    if (!status) return t('employeeStatus.offline');
+    
+    switch (status) {
+      case 'available':
+        return t('employeeStatus.available');
+      case 'busy':
+        return t('employeeStatus.busy');
+      case 'paused':
+        return t('employeeStatus.paused');
+      case 'offline':
+        return t('employeeStatus.offline');
+      default:
+        return t('employeeStatus.unknown');
+    }
+  };
+
   return (
     <div className="employees-list-container">
       <h2>{t('employeesList.title')}</h2>
@@ -181,7 +199,7 @@ const EmployeesList = () => {
                     <td>{employee.email}</td>
                     <td>{employee.phone}</td>
                     <td>{employee.desk || '-'}</td>
-                    <td>{employee.status || 'offline'}</td>
+                    <td>{getTranslatedStatus(employee.status)}</td>
                     <td>
                         <button
                         className="btn btn-danger"

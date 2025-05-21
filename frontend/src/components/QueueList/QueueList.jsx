@@ -1,7 +1,7 @@
-// QueueList.jsx
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../api';
 import { useTranslation } from 'react-i18next';
+import ProgramTranslator from '../ProgramTranslator/ProgramTranslator';
 import './QueueList.css';
 
 const QueueList = () => {
@@ -83,6 +83,26 @@ const QueueList = () => {
     return date.toLocaleString();
   };
 
+  // Получение переведенного статуса заявки
+  const getTranslatedStatus = (status) => {
+    if (!status) return t('admissionQueue.status.unknown');
+    
+    switch (status) {
+      case 'waiting':
+        return t('admissionQueue.status.waiting');
+      case 'in_progress':
+        return t('admissionQueue.status.in_progress');
+      case 'completed':
+        return t('admissionQueue.status.completed');
+      case 'paused':
+        return t('admissionQueue.status.paused');
+      case 'cancelled':
+        return t('admissionQueue.status.cancelled');
+      default:
+        return t('admissionQueue.status.unknown');
+    }
+  };
+
   return (
     <div className="queue-list-container">
       <h2>{t('queueList.title')}</h2>
@@ -153,22 +173,32 @@ const QueueList = () => {
               </tr>
             </thead>
             <tbody>
-              {queue && Array.isArray(queue) && queue.length === 0 ? (
-                    <tr>
-                        <td colSpan="7">{t('queueList.noEntries')}</td>
-                    </tr>
+                {queue && Array.isArray(queue) && queue.length === 0 ? (
+                <tr>
+                    <td colSpan="7">{t('queueList.noEntries')}</td>
+                </tr>
                 ) : (
-                    queue && Array.isArray(queue) && queue.map((entry) => (
-                        <tr key={entry.id}>
-                        <td>{entry.full_name}</td>
-                        <td>{Array.isArray(entry.programs) ? entry.programs.join(', ') : entry.programs}</td>
-                        <td>{entry.queue_number}</td>
-                        <td>{entry.assigned_employee_name || '-'}</td>
-                        <td>{formatDateTime(entry.created_at)}</td>
-                        <td>{entry.status}</td>
-                        <td>{formatTime(entry.processing_time)}</td>
-                        </tr>
-                    ))
+                queue && Array.isArray(queue) && queue.map((entry) => (
+                    <tr key={entry.id}>
+                    <td>{entry.full_name}</td>
+                    <td>
+                        {Array.isArray(entry.programs) ? 
+                        entry.programs.map((program, index) => (
+                            <React.Fragment key={program}>
+                            <ProgramTranslator programCode={program} formLanguage={entry.form_language} />
+                            {index < entry.programs.length - 1 && ', '}
+                            </React.Fragment>
+                        )) : 
+                        entry.programs
+                        }
+                    </td>
+                    <td>{entry.queue_number}</td>
+                    <td>{entry.assigned_employee_name || '-'}</td>
+                    <td>{formatDateTime(entry.created_at)}</td>
+                    <td>{getTranslatedStatus(entry.status)}</td>
+                    <td>{formatTime(entry.processing_time)}</td>
+                    </tr>
+                ))
                 )}
             </tbody>
           </table>

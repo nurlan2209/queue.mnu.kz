@@ -41,14 +41,16 @@ const MASTER_PROGRAMS = [
 const DOCTORATE_PROGRAMS = ['law', 'phdEconomics'];
 
 const PublicQueueForm = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  
   const [formData, setFormData] = useState({
     full_name: '',
-    phone: '+7', // Начинаем с +7
+    phone: '+7',
     programs: [],
     notes: '',
     assigned_employee_name: '',
     captcha_token: null,
+    form_language: i18n.language
   });
   const [employees, setEmployees] = useState([]);
   const [captchaToken, setCaptchaToken] = useState(null);
@@ -137,7 +139,7 @@ const PublicQueueForm = () => {
     queueAPI.getQueueCount()
       .then((response) => setQueueCount(response.data.count))
       .catch(() => setQueueCount(null));
-  }, []);
+  }, [t]);
 
   const getEmployeeStatusText = (status) => {
     switch (status) {
@@ -193,7 +195,14 @@ const PublicQueueForm = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await createQueueEntry(formData);
+      
+      // Обновить язык формы перед отправкой
+      const dataToSend = {
+        ...formData,
+        form_language: i18n.language
+      };
+      
+      const response = await createQueueEntry(dataToSend);
       
       // После успешной отправки проверяем статус очереди по имени
       try {
