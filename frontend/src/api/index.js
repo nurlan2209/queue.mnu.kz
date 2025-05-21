@@ -31,12 +31,8 @@ export const getEmployees = async () => {
     return response.data;
   } catch (error) {
     console.error('Error loading employees:', error);
-    // Возвращаем фиктивные данные для разработки
-    return [
-      { name: "Сотрудник 1" },
-      { name: "Сотрудник 2" },
-      { name: "Сотрудник 3" }
-    ];
+    // В случае ошибки возвращаем пустой массив вместо фиктивных данных
+    return [];
   }
 };
 

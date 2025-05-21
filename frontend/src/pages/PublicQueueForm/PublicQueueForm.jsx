@@ -139,6 +139,19 @@ const PublicQueueForm = () => {
       .catch(() => setQueueCount(null));
   }, []);
 
+  const getEmployeeStatusText = (status) => {
+    switch (status) {
+      case 'available':
+        return t('publicQueueForm.employeeStatus.available', 'Доступен');
+      case 'busy':
+        return t('publicQueueForm.employeeStatus.busy', 'Занят');
+      case 'paused':
+        return t('publicQueueForm.employeeStatus.paused', 'На перерыве');
+      default:
+        return '';
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -310,7 +323,9 @@ const PublicQueueForm = () => {
             <option value="">{t('publicQueueForm.selectEmployee')}</option>
             {employees.map((employee) => (
               <option key={employee.name} value={employee.name}>
-                {employee.name}
+                {employee.name} 
+                {employee.desk ? ` (${t('publicQueueForm.desk', 'Стол')} ${employee.desk})` : ''}
+                {employee.status && employee.status !== 'offline' ? ` - ${getEmployeeStatusText(employee.status)}` : ''}
               </option>
             ))}
           </select>

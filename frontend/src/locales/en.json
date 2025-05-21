@@ -188,6 +188,7 @@
   "closeTicket": "Close Ticket"
   },
   "publicQueueForm": {
+    "desk": "Desk",
     "title": "Join Admission Queue",
     "description": "Fill out the form to join the admission queue",
     "fullNameLabel": "Full Name",
@@ -208,6 +209,11 @@
     "backButton": "Back to Form",
     "checkTitle": "Already submitted an application?",
     "captchaError": "Please complete the CAPTCHA verification",
+    "employeeStatus": {
+      "available": "Available",
+      "busy": "Busy",
+      "paused": "On break"
+    },
     "programs": {
       "bachelor": {
         "accounting": "Accounting",
@@ -309,6 +315,7 @@
     "offline": "Offline",
     "unknown": "Unknown",
     "startWork": "Start Work",
+    "finishWork": "Finish Work",
     "callNext": "Call Next",
     "pauseWork": "Take a Break",
     "resumeWork": "Resume Work",

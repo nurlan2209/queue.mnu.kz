@@ -184,6 +184,7 @@
   "closeTicket": "Талонды жабу"
   },
   "publicQueueForm": {
+    "desk": "Үстел",
     "title": "Қабылдау комиссиясына кезекке жазылу",
     "description": "Кезекке тұру үшін форманы толтырыңыз",
     "fullNameLabel": "Аты-жөні",
@@ -204,6 +205,11 @@
     "backButton": "Формаға қайту",
     "checkTitle": "Заявка тапсырдыңыз ба?",
     "captchaError": "Капча тексеруден өтіңіз",
+    "employeeStatus": {
+      "available": "Қол жетімді",
+      "busy": "Бос емес",
+      "paused": "Үзіліс"
+    },
     "programs": {
       "bachelor": {
         "accounting": "Бухгалтерлік есеп",
@@ -305,6 +311,7 @@
     "offline": "Жұмыста емес",
     "unknown": "Белгісіз",
     "startWork": "Жұмысты бастау",
+    "finishWork": "Жұмысты аяқтау",
     "callNext": "Келесіні шақыру",
     "pauseWork": "Үзіліске шығу",
     "resumeWork": "Жұмысты жалғастыру",

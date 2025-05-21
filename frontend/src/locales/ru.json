@@ -187,6 +187,7 @@
     "closeTicket": "Закрыть талон"
   },
   "publicQueueForm": {
+    "desk": "Стол",
     "title": "Запись в очередь приемной комиссии",
     "description": "Заполните форму, чтобы занять очередь в приемную комиссию",
     "fullNameLabel": "ФИО",
@@ -207,6 +208,11 @@
     "backButton": "Вернуться к форме",
     "checkTitle": "Уже подали заявку?",
     "captchaError": "Пожалуйста, пройдите проверку капчи",
+    "employeeStatus": {
+      "available": "Доступен",
+      "busy": "Занят",
+      "paused": "На перерыве"
+    },
     "programs": {
       "bachelor": {
         "accounting": "Бухгалтерский учёт",
@@ -308,6 +314,7 @@
     "offline": "Не на работе",
     "unknown": "Неизвестно",
     "startWork": "Начать работу",
+    "finishWork": "Закончить работу",
     "callNext": "Вызвать следующего",
     "pauseWork": "Уйти на перерыв",
     "resumeWork": "Продолжить работу",

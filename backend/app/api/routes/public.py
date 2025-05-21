@@ -43,17 +43,19 @@ def get_display_queue(db: Session = Depends(get_db)):
 
 @router.get("/employees", response_model=List[dict])
 def get_employees(db: Session = Depends(get_db)):
-    """Get all admission employees (public endpoint)"""
-    # Изменим запрос для отладки
-    all_employees = db.query(User).all()
-    admission_employees = [emp for emp in all_employees if emp.role == "admission"]
+    """Get all admission employees that are currently online (public endpoint)"""
+    # Получаем только сотрудников admission, которые не в статусе offline
+    online_employees = db.query(User).filter(
+        User.role == "admission",
+        User.status != "offline"  # Исключаем сотрудников со статусом offline
+    ).all()
     
-    if not admission_employees:
-        # logger.warning("No admission employees found in database")
-        return []  # Вместо ошибки 404 вернем пустой список
+    if not online_employees:
+        # Если нет активных сотрудников
+        return []
     
-    # logger.info(f"Found {len(admission_employees)} admission employees")
-    return [{"name": emp.full_name} for emp in admission_employees]
+    # Возвращаем список сотрудников с ролью admission, которые online
+    return [{"name": emp.full_name, "status": emp.status, "desk": emp.desk} for emp in online_employees]
 
 @router.post("/queue", response_model=QueueResponse)
 def add_to_queue(
