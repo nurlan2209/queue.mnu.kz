@@ -1,4 +1,3 @@
-# app/config.py
 from pydantic_settings import BaseSettings
 from typing import Optional
 
@@ -10,10 +9,13 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str
     ADMIN_PASSWORD: str
     RECAPTCHA_SECRET_KEY: str = "6Lf_mUQrAAAAALFCOaj5iTDL2XYcVOu1vUmSnHdk"
+    
+    # Google TTS вместо Yandex
+    GOOGLE_TTS_API_KEY: Optional[str] = ""
 
-    postgres_user: Optional[str]
-    postgres_password: Optional[str]
-    postgres_db: Optional[str]
+    postgres_user: Optional[str] = None
+    postgres_password: Optional[str] = None
+    postgres_db: Optional[str] = None
 
     class Config:
         env_file = ".env"

@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 from app.models.queue import QueueStatus
@@ -36,6 +36,8 @@ class QueueResponse(QueueBase):
     updated_at: Optional[datetime] = None
     employee_desk: Optional[str] = None
     processing_time: Optional[int] = None
+    # ДОБАВЛЯЕМ ПОЛЕ ДЛЯ АУДИО
+    speech: Optional[Dict[str, Any]] = None
 
     model_config = ConfigDict(
         from_attributes=True,

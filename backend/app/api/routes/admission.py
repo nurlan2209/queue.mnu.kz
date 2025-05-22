@@ -9,6 +9,7 @@ from app.models.queue import QueueEntry, QueueStatus
 from app.schemas import QueueResponse, QueueUpdate, UserResponse  # Добавляем импорт UserResponse
 from app.security import get_admission_user
 from app.services.queue import update_queue_entry, get_all_queue_entries, start_processing_time, end_processing_time
+from app.services.speechkit import generate_speech  # Возвращаем Yandex SpeechKit
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -89,12 +90,12 @@ def resume_work(
     
     return current_user
 
-@router.post("/call-next", response_model=Union[QueueResponse, dict])
-def call_next_applicant(
+@router.post("/call-next")
+async def call_next_applicant(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_admission_user)
 ):
-    """Вызвать следующего абитуриента из очереди"""
+    """Вызвать следующего абитуриента из очереди с голосовой озвучкой"""
     logger.info(f"User {current_user.id} calling next applicant")
     
     # Проверяем, что сотрудник доступен
@@ -112,27 +113,58 @@ def call_next_applicant(
     
     if not next_entry:
         logger.warning(f"No applicants assigned to employee {current_user.full_name}")
-        # Вместо ошибки 404 возвращаем JSON с сообщением
         return {
             "message": "Нет абитуриентов в очереди для вас.",
             "status": "empty_queue",
             "success": False
         }
     
-    # Обновляем статус заявки и сотрудника
+    # СНАЧАЛА ГЕНЕРИРУЕМ АУДИО
+    desk = current_user.desk or "не указан"
+    language = next_entry.form_language or 'ru'
+    
+    logger.info(f"🎤 Генерируем речь для: номер {next_entry.queue_number}, {next_entry.full_name}, стол {desk}, язык {language}")
+    
+    speech_result = await generate_speech(
+        queue_number=next_entry.queue_number,
+        full_name=next_entry.full_name,
+        desk=desk,
+        language=language
+    )
+    
+    logger.info(f"✅ Speech generation result: {speech_result['success']}")
+    
+    # ПОТОМ обновляем статус заявки и сотрудника
     next_entry.status = QueueStatus.IN_PROGRESS
     current_user.status = EmployeeStatus.BUSY.value
     
-    # Вызов функции для начала отсчета времени обработки
     start_processing_time(db, next_entry.id)
     
     db.commit()
     db.refresh(next_entry)
     db.refresh(current_user)
     
+    # Возвращаем данные с аудио
+    response_data = {
+        "id": next_entry.id,
+        "queue_number": next_entry.queue_number,
+        "full_name": next_entry.full_name,
+        "phone": next_entry.phone,
+        "programs": next_entry.programs,
+        "status": next_entry.status,
+        "notes": next_entry.notes,
+        "created_at": next_entry.created_at,
+        "updated_at": next_entry.updated_at,
+        "assigned_employee_name": next_entry.assigned_employee_name,
+        "processing_time": next_entry.processing_time,
+        "form_language": next_entry.form_language,
+        "employee_desk": desk,
+        "speech": speech_result
+    }
+    
     logger.info(f"Queue entry {next_entry.id} moved to IN_PROGRESS, employee now BUSY")
     
-    return next_entry
+    return response_data
 
 @router.post("/complete-current", response_model=UserResponse)
 def complete_current_applicant(
