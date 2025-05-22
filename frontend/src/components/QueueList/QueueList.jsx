@@ -9,32 +9,50 @@ const QueueList = () => {
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [exportLoading, setExportLoading] = useState(false);
+  
+  // Состояния для Google Sheets
+  const [showGoogleSheetsModal, setShowGoogleSheetsModal] = useState(false);
+  const [googleSheetsId, setGoogleSheetsId] = useState('');
+  const [savedGoogleSheetsId, setSavedGoogleSheetsId] = useState('');
+  const [isEditingId, setIsEditingId] = useState(false);
+  
   const [filters, setFilters] = useState({
     status: '',
     date: '',
-    employee: ''
+    employee: '',
+    full_name: '',  
+    program: '' 
   });
 
+  // Загрузка сохраненного Google Sheets ID при загрузке компонента
+  useEffect(() => {
+    const savedId = localStorage.getItem('googleSheetsId');
+    if (savedId) {
+      setSavedGoogleSheetsId(savedId);
+    }
+  }, []);
+
   // Загрузка заявок
-    const loadQueue = async () => {
+  const loadQueue = async () => {
     try {
         setLoading(true);
         const params = {};
         if (filters.status) params.status = filters.status;
         if (filters.date) params.date = filters.date;
         if (filters.employee) params.employee = filters.employee;
+        if (filters.full_name) params.full_name = filters.full_name;  
+        if (filters.program) params.program = filters.program;      
         
         const response = await adminAPI.getAllQueue(params);
-        // Проверить, является ли response массивом
         setQueue(Array.isArray(response) ? response : []);
     } catch (err) {
         setError(err.response?.data?.detail || t('queueList.loadError'));
-        // Установить пустой массив в случае ошибки
         setQueue([]);
     } finally {
         setLoading(false);
     }
-    };
+  };
 
   useEffect(() => {
     loadQueue();
@@ -46,20 +64,107 @@ const QueueList = () => {
     setFilters({ ...filters, [name]: value });
   };
 
-  // Экспорт в Excel
+  // Экспорт в Excel/CSV
   const handleExportToExcel = async () => {
     try {
+      setExportLoading(true);
       const response = await adminAPI.exportQueueToExcel();
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'queue_data.xlsx');
+      link.setAttribute('download', 'queue_data.xlsx'); 
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (err) {
       setError(err.response?.data?.detail || t('queueList.exportError'));
+    } finally {
+      setExportLoading(false);
     }
+  };
+
+  // Открытие модального окна для настройки Google Sheets
+  const handleOpenGoogleSheetsModal = () => {
+    setGoogleSheetsId(savedGoogleSheetsId);
+    setShowGoogleSheetsModal(true);
+    setIsEditingId(!savedGoogleSheetsId); // Если ID не сохранен, сразу включаем режим редактирования
+  };
+
+  // Сохранение Google Sheets ID
+  const handleSaveGoogleSheetsId = () => {
+    if (googleSheetsId.trim()) {
+      localStorage.setItem('googleSheetsId', googleSheetsId.trim());
+      setSavedGoogleSheetsId(googleSheetsId.trim());
+      setIsEditingId(false);
+      alert('Google Sheets ID успешно сохранен!');
+    } else {
+      alert('Пожалуйста, введите действительный Google Sheets ID');
+    }
+  };
+
+  // Подготовка данных для копирования
+  const prepareDataForCopy = () => {
+    const headers = ['ФИО', 'Программы', 'Номер в очереди', 'Сотрудник', 'Дата создания', 'Статус', 'Время обработки (сек)'];
+    
+    const rows = queue.map(entry => [
+      entry.full_name || '-',
+      Array.isArray(entry.programs) ? entry.programs.join(', ') : (entry.programs || '-'),
+      entry.queue_number || '-',
+      entry.assigned_employee_name || '-',
+      entry.created_at ? formatDateTime(entry.created_at) : '-',
+      getTranslatedStatus(entry.status),
+      entry.processing_time ? formatTime(entry.processing_time) : '-'
+    ]);
+
+    return [headers, ...rows];
+  };
+
+  // Копирование данных в буфер обмена
+  const copyDataToClipboard = async () => {
+    try {
+      const data = prepareDataForCopy();
+      const textData = data.map(row => row.join('\t')).join('\n');
+      
+      await navigator.clipboard.writeText(textData);
+      return true;
+    } catch (err) {
+      console.error('Ошибка копирования:', err);
+      return false;
+    }
+  };
+
+  // Переход к Google Sheets с копированием данных
+  const handleExportToGoogleSheets = async () => {
+    if (savedGoogleSheetsId) {
+      // Копируем данные в буфер обмена
+      const copied = await copyDataToClipboard();
+      
+      if (copied) {
+        alert('✅ Данные скопированы в буфер обмена!\n\nИнструкция:\n1. Таблица откроется в новой вкладке\n2. Выберите ячейку A1\n3. Нажмите Ctrl+V (или Cmd+V на Mac)\n4. Данные автоматически вставятся в таблицу');
+      } else {
+        alert('⚠️ Не удалось скопировать данные в буфер обмена.\nВы можете вручную скопировать данные из таблицы ниже.');
+      }
+      
+      // Открываем Google Sheets
+      const googleSheetsUrl = `https://docs.google.com/spreadsheets/d/${savedGoogleSheetsId}/edit#gid=0`;
+      window.open(googleSheetsUrl, '_blank');
+      setShowGoogleSheetsModal(false);
+    } else {
+      alert('Сначала настройте Google Sheets ID');
+    }
+  };
+
+  // Закрытие модального окна
+  const handleCloseModal = () => {
+    setShowGoogleSheetsModal(false);
+    setGoogleSheetsId(savedGoogleSheetsId);
+    setIsEditingId(false);
+  };
+
+  // Включение режима редактирования ID
+  const handleEditId = () => {
+    setIsEditingId(true);
+    setGoogleSheetsId(savedGoogleSheetsId);
   };
 
   // Форматирование времени (из секунд в часы, минуты, секунды)
@@ -149,11 +254,154 @@ const QueueList = () => {
             onChange={handleFilterChange}
           />
         </div>
+
+        <div className="filter-group">
+          <label htmlFor="full_name">Фильтр по ФИО</label>
+          <input
+            type="text"
+            id="full_name"
+            name="full_name"
+            placeholder="Введите ФИО абитуриента"
+            value={filters.full_name}
+            onChange={handleFilterChange}
+          />
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="program">Фильтр по программе</label>
+          <input
+            type="text"
+            id="program"
+            name="program"
+            placeholder="Введите название программы"
+            value={filters.program}
+            onChange={handleFilterChange}
+          />
+        </div>
         
-        <button className="btn btn-primary export-btn" onClick={handleExportToExcel}>
-          {t('queueList.exportButton')}
-        </button>
+        {/* Кнопки экспорта */}
+        <div className="export-buttons">
+          <button 
+            className="btn btn-primary export-btn" 
+            onClick={handleExportToExcel}
+            disabled={exportLoading}
+          >
+            {exportLoading ? 'Экспорт...' : t('queueList.exportButton')}
+          </button>
+          
+          <button 
+            className="btn btn-success export-btn google-sheets-btn" 
+            onClick={handleOpenGoogleSheetsModal}
+          >
+            📊 Экспорт в Google Sheets
+          </button>
+        </div>
       </div>
+
+      {/* Модальное окно Google Sheets */}
+      {showGoogleSheetsModal && (
+        <div className="modal-overlay">
+          <div className="modal-content google-sheets-modal">
+            <div className="modal-header">
+              <h3>Настройка Google Sheets</h3>
+              <button className="close-btn" onClick={handleCloseModal}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              {!savedGoogleSheetsId || isEditingId ? (
+                <div className="sheets-id-input">
+                  <label htmlFor="sheetsId">Google Sheets ID:</label>
+                  <input
+                    type="text"
+                    id="sheetsId"
+                    value={googleSheetsId}
+                    onChange={(e) => setGoogleSheetsId(e.target.value)}
+                    placeholder="Введите ID Google Sheets таблицы"
+                    className="sheets-input"
+                  />
+                  <button 
+                    onClick={handleSaveGoogleSheetsId}
+                    className="btn btn-primary save-btn"
+                  >
+                    Сохранить
+                  </button>
+                </div>
+              ) : (
+                <div className="sheets-id-display">
+                  <p><strong>Текущий Google Sheets ID:</strong></p>
+                  <div className="saved-id-container">
+                    <code className="saved-id">{savedGoogleSheetsId}</code>
+                    <button 
+                      onClick={handleEditId}
+                      className="btn btn-secondary edit-btn"
+                    >
+                      Изменить
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {savedGoogleSheetsId && !isEditingId && (
+                <div className="export-actions">
+                  <button 
+                    onClick={handleExportToGoogleSheets}
+                    className="btn btn-success export-to-sheets-btn"
+                  >
+                    🚀 Скопировать данные и перейти к Google Sheets
+                  </button>
+                  
+                  <button 
+                    onClick={async () => {
+                      const copied = await copyDataToClipboard();
+                      if (copied) {
+                        alert('✅ Данные скопированы в буфер обмена!\nТеперь вы можете вставить их в любую таблицу с помощью Ctrl+V');
+                      } else {
+                        alert('❌ Ошибка копирования данных');
+                      }
+                    }}
+                    className="btn btn-secondary copy-data-btn"
+                  >
+                    📋 Только скопировать данные
+                  </button>
+                </div>
+              )}
+
+              <div className="instructions">
+                <h4>📋 Инструкция:</h4>
+                
+                <div className="instruction-section">
+                  <h5>🔧 Настройка Google Sheets:</h5>
+                  <ol>
+                    <li>Откройте <a href="https://sheets.google.com" target="_blank" rel="noopener noreferrer">Google Sheets</a> и создайте новую таблицу</li>
+                    <li>Скопируйте ID таблицы из URL адреса:</li>
+                    <li className="url-example">
+                      <code>https://docs.google.com/spreadsheets/d/<span className="highlight">1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms</span>/edit</code>
+                    </li>
+                    <li>Вставьте выделенную часть (ID) в поле выше</li>
+                    <li>Убедитесь, что таблица доступна для редактирования</li>
+                  </ol>
+                </div>
+
+                <div className="instruction-section">
+                  <h5>📊 Экспорт данных:</h5>
+                  <ol>
+                    <li>Нажмите "Скопировать данные и перейти к Google Sheets"</li>
+                    <li>Данные автоматически скопируются в буфер обмена</li>
+                    <li>Google Sheets откроется в новой вкладке</li>
+                    <li>Выберите ячейку <strong>A1</strong> в таблице</li>
+                    <li>Нажмите <kbd>Ctrl+V</kbd> (или <kbd>Cmd+V</kbd> на Mac)</li>
+                    <li>Данные автоматически вставятся с правильным форматированием!</li>
+                  </ol>
+                </div>
+                
+                <div className="tip">
+                  <strong>💡 Совет:</strong> Данные копируются в табличном формате и автоматически разделятся по столбцам при вставке в Google Sheets. Вы также можете использовать кнопку "Только скопировать данные" для копирования без открытия браузера.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Таблица заявок */}
       <div className="queue-table">

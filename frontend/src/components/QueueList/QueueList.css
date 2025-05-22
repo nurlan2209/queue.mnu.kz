@@ -87,3 +87,365 @@ th {
   color: #f44336;
   border: 1px solid #ffcdd2;
 }
+
+/* Модальное окно */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.google-sheets-modal {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: var(--text-color);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+/* Поле ввода ID */
+.sheets-id-input {
+  margin-bottom: 24px;
+}
+
+.sheets-id-input label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.sheets-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sheets-input:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.save-btn {
+  background: #34a853;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-btn:hover {
+  background: #2d8f47;
+}
+
+/* Отображение сохраненного ID */
+.sheets-id-display {
+  margin-bottom: 24px;
+}
+
+.sheets-id-display p {
+  margin-bottom: 12px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.saved-id-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.saved-id {
+  flex: 1;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 13px;
+  background: #e5e7eb;
+  padding: 6px 10px;
+  border-radius: 4px;
+  word-break: break-all;
+  color: #1f2937;
+}
+
+.edit-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.edit-btn:hover {
+  background: #4b5563;
+}
+
+/* Кнопка экспорта */
+.export-actions {
+  margin-bottom: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.export-to-sheets-btn {
+  background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.export-to-sheets-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(66, 133, 244, 0.3);
+}
+
+.copy-data-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.copy-data-btn:hover {
+  background: #4b5563;
+}
+
+/* Инструкции */
+.instructions {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.instructions h4 {
+  margin: 0 0 16px 0;
+  color: #1e293b;
+  font-size: 18px;
+  text-align: center;
+}
+
+.instruction-section {
+  margin-bottom: 20px;
+}
+
+.instruction-section h5 {
+  margin: 0 0 10px 0;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.instructions ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.instructions li {
+  margin-bottom: 8px;
+}
+
+.instructions a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.instructions a:hover {
+  text-decoration: underline;
+}
+
+kbd {
+  background: #374151;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.url-example {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 10px;
+  border-radius: 6px;
+  margin: 8px 0;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.highlight {
+  background: #fbbf24;
+  color: #1e293b;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.tip {
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 16px;
+  color: #1e40af;
+}
+
+.tip strong {
+  color: #1d4ed8;
+}
+
+/* Кнопки экспорта */
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.export-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .modal-header {
+    padding: 16px 20px;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .saved-id-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .export-buttons {
+    flex-direction: column;
+  }
+  
+  .export-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
