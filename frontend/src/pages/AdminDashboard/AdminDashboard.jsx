@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import AdminPanel from '../../components/AdminPanel/AdminPanel';
 import EmployeesList from '../../components/EmployeesList/EmployeesList';
 import QueueList from '../../components/QueueList/QueueList';
+import VideoManager from '../../components/VideoManager/VideoManager';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -26,11 +27,18 @@ const AdminDashboard = () => {
         >
           {t('adminDashboard.queueTab')}
         </button>
+        <button 
+          className={`tab-btn ${activeTab === 'video' ? 'active' : ''}`}
+          onClick={() => setActiveTab('video')}
+        >
+          Управление видео
+        </button>
       </div>
 
       <div className="dashboard-content">
         {activeTab === 'employees' && <EmployeesList />}
         {activeTab === 'queue' && <QueueList />}
+        {activeTab === 'video' && <VideoManager />}
       </div>
     </div>
   );

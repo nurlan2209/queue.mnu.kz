@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import ReCAPTCHA from 'react-google-recaptcha';
+import { useRecaptcha } from '../../hooks/useRecaptcha';
 import { createQueueEntry, getEmployees, queueAPI } from '../../api';
 import QueueStatusCheck from '../../components/QueueStatusCheck/QueueStatusCheck';
 import QueueTicket from '../../components/QueueTicket/QueueTicket';
 import { useTranslation } from 'react-i18next';
 import './PublicQueueForm.css';
+
+const RECAPTCHA_SITE_KEY = "6Lf_mUQrAAAAALV5gCmjflOGMl5h-RiXvTNeM2UZ";
 
 const BACHELOR_PROGRAMS = [
   'accounting',
@@ -42,6 +44,7 @@ const DOCTORATE_PROGRAMS = ['law', 'phdEconomics'];
 
 const PublicQueueForm = () => {
   const { t, i18n } = useTranslation();
+  const { isReady, isLoading, executeRecaptcha } = useRecaptcha(RECAPTCHA_SITE_KEY);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -53,7 +56,6 @@ const PublicQueueForm = () => {
     form_language: i18n.language
   });
   const [employees, setEmployees] = useState([]);
-  const [captchaToken, setCaptchaToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -174,11 +176,6 @@ const PublicQueueForm = () => {
     }
   };
 
-  const handleCaptchaChange = (token) => {
-    setCaptchaToken(token);
-    setFormData({ ...formData, captcha_token: token });
-  };
-
   const toggleCategory = (category) => {
     setCategoryStates({
       ...categoryStates,
@@ -188,18 +185,30 @@ const PublicQueueForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!captchaToken) {
-      setError(t('publicQueueForm.captchaError'));
+    
+    if (!isReady) {
+      setError('reCAPTCHA еще загружается. Попробуйте через несколько секунд.');
       return;
     }
+
     try {
       setLoading(true);
       setError(null);
       
+      // Выполняем reCAPTCHA v3
+      const captchaToken = await executeRecaptcha('submit_queue_form');
+      
+      if (!captchaToken) {
+        setError('Не удалось пройти проверку reCAPTCHA. Попробуйте снова.');
+        setLoading(false);
+        return;
+      }
+      
       // Обновить язык формы перед отправкой
       const dataToSend = {
         ...formData,
-        form_language: i18n.language
+        form_language: i18n.language,
+        captcha_token: captchaToken
       };
       
       const response = await createQueueEntry(dataToSend);
@@ -232,7 +241,7 @@ const PublicQueueForm = () => {
         assigned_employee_name: '',
         captcha_token: null,
       });
-      setCaptchaToken(null);
+      
       // Обновляем количество в очереди
       queueAPI.getQueueCount()
         .then((response) => setQueueCount(response.data.count))
@@ -285,6 +294,13 @@ const PublicQueueForm = () => {
       <h1>{t('publicQueueForm.title')}</h1>
       <p className="form-description">{t('publicQueueForm.description')}</p>
       {error && <div className="alert alert-danger">{error}</div>}
+      
+      {isLoading && (
+        <div className="recaptcha-loading">
+          <p>Загрузка системы защиты...</p>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit} className="public-queue-form">
         <div className="form-group">
           <label htmlFor="full_name">{t('publicQueueForm.fullNameLabel')}</label>
@@ -416,16 +432,26 @@ const PublicQueueForm = () => {
             )}
           </div>
         </div>
-        <div className="form-group captcha-container">
-          <ReCAPTCHA
-            sitekey="6LdkwT0rAAAAAAPWoQweToNny7P4FHheyz2SZIr8"
-            onChange={handleCaptchaChange}
-          />
+        
+        {/* reCAPTCHA v3 работает в фоне, показываем только уведомление */}
+        <div className="recaptcha-notice">
+          <small>
+            Эта форма защищена reCAPTCHA. Применяются{' '}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+              Политика конфиденциальности
+            </a>{' '}
+            и{' '}
+            <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">
+              Условия использования
+            </a>{' '}
+            Google.
+          </small>
         </div>
+        
         <button
           type="submit"
           className="btn btn-primary btn-submit"
-          disabled={loading || !captchaToken}
+          disabled={loading || !isReady}
         >
           {loading ? t('publicQueueForm.submitting') : t('publicQueueForm.submitButton')}
         </button>

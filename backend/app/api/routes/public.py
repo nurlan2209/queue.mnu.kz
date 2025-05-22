@@ -9,6 +9,8 @@ from app.models.user import User
 from app.schemas.queue import PublicQueueCreate, QueueResponse, PublicQueueResponse
 from app.services.captcha import verify_captcha
 from app.services.queue import create_queue_entry, get_queue_count
+from app.models.video import VideoSettings
+from app.schemas.video import VideoSettingsResponse
 
 router = APIRouter(prefix="/public")
 
@@ -199,3 +201,18 @@ def move_back_in_queue(
 @router.get("/queue/count")
 def get_queue_count_endpoint(db: Session = Depends(get_db)):  # Удалите async
     return {"count": get_queue_count(db)}
+
+@router.get("/video-settings", response_model=VideoSettingsResponse)
+def get_public_video_settings(db: Session = Depends(get_db)):
+    """Get current video settings for public display"""
+    settings = db.query(VideoSettings).first()
+    if not settings:
+        # Возвращаем дефолтные настройки если записи нет
+        return VideoSettingsResponse(
+            id=0,
+            youtube_url="",
+            is_enabled=False,
+            created_at=datetime.now(),
+            updated_at=None
+        )
+    return settings

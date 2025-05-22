@@ -5,7 +5,9 @@ from typing import List, Optional
 from app.database import get_db
 from app.models.user import User
 from app.models.queue import QueueEntry, QueueStatus
+from app.models.video import VideoSettings  # Добавляем импорт
 from app.schemas.queue import QueueResponse
+from app.schemas.video import VideoSettingsResponse, VideoSettingsUpdate  # Добавляем импорт
 from app.schemas import AdminUserCreate, UserResponse, UserUpdate
 from app.security import get_admin_user
 from app.services.user import create_user
@@ -114,3 +116,41 @@ def update_employee(
     db.commit()
     db.refresh(employee)
     return employee
+
+# === НОВЫЕ РОУТЫ ДЛЯ УПРАВЛЕНИЯ ВИДЕО ===
+
+@router.get("/video-settings", response_model=VideoSettingsResponse)
+def get_video_settings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Get current video settings (admin only)"""
+    settings = db.query(VideoSettings).first()
+    if not settings:
+        # Создаем запись если её нет
+        settings = VideoSettings(youtube_url="", is_enabled=False)
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+    return settings
+
+@router.put("/video-settings", response_model=VideoSettingsResponse)
+def update_video_settings(
+    video_data: VideoSettingsUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Update video settings (admin only)"""
+    settings = db.query(VideoSettings).first()
+    if not settings:
+        # Создаем новую запись если её нет
+        settings = VideoSettings()
+        db.add(settings)
+    
+    # Обновляем поля
+    for key, value in video_data.dict(exclude_unset=True).items():
+        setattr(settings, key, value)
+    
+    db.commit()
+    db.refresh(settings)
+    return settings

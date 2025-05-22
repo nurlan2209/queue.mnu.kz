@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { queueAPI } from '../../api';
+import { queueAPI, publicAPI } from '../../api';
 import { useTranslation } from 'react-i18next';
 import './QueueDisplay.css';
 
@@ -9,6 +9,18 @@ const QueueDisplay = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [videoSettings, setVideoSettings] = useState({
+    youtube_url: '',
+    is_enabled: false
+  });
+  
+  // Функция для извлечения YouTube ID из URL
+  const extractYouTubeId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
   
   // Функция для получения данных очереди
   const fetchQueueData = async () => {
@@ -24,18 +36,32 @@ const QueueDisplay = () => {
       setLoading(false);
     }
   };
+
+  // Функция для получения настроек видео
+  const fetchVideoSettings = async () => {
+    try {
+      const response = await publicAPI.getVideoSettings();
+      setVideoSettings(response.data);
+    } catch (error) {
+      console.error('Ошибка при получении настроек видео:', error);
+    }
+  };
   
   // Обновляем данные каждые 5 секунд
   useEffect(() => {
     fetchQueueData();
+    fetchVideoSettings();
     
     const interval = setInterval(() => {
       fetchQueueData();
+      fetchVideoSettings();
       setCurrentTime(new Date());
     }, 5000);
     
     return () => clearInterval(interval);
   }, []);
+
+  const videoId = videoSettings.youtube_url ? extractYouTubeId(videoSettings.youtube_url) : null;
   
   return (
     <div className="queue-display">
@@ -74,6 +100,21 @@ const QueueDisplay = () => {
           })
         )}
       </div>
+      
+      {/* Блок с видео внизу экрана */}
+      {videoSettings.is_enabled && videoId && (
+        <div className="video-section">
+          <div className="video-container">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1`}
+              title="Information Video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      )}
       
       <div className="display-footer">
         <p>{t('queueDisplay.waitMessage')}</p>

@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     ADMIN_EMAIL: str
     ADMIN_PASSWORD: str
-    RECAPTCHA_SECRET_KEY: str = "6LdkwT0rAAAAAButFXLYHc9Mtaxw6l2hTF5zhx2G"
+    RECAPTCHA_SECRET_KEY: str = "6Lf_mUQrAAAAALFCOaj5iTDL2XYcVOu1vUmSnHdk"
 
     postgres_user: Optional[str]
     postgres_password: Optional[str]

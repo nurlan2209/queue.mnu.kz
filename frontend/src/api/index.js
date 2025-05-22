@@ -114,7 +114,15 @@ export const adminAPI = {
       return [];
     }
   },
-  exportQueueToExcel: () => api.get('/admin/queue/export', { responseType: 'blob' })
+  exportQueueToExcel: () => api.get('/admin/queue/export', { responseType: 'blob' }),
+  // Новые методы для управления видео
+  getVideoSettings: () => api.get('/admin/video-settings'),
+  updateVideoSettings: (data) => api.put('/admin/video-settings', data)
+};
+
+// Публичный API для получения настроек видео
+export const publicAPI = {
+  getVideoSettings: () => api.get('/public/video-settings')
 };
 
 
