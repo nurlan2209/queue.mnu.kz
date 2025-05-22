@@ -433,18 +433,17 @@ const PublicQueueForm = () => {
           </div>
         </div>
         
-        {/* reCAPTCHA v3 работает в фоне, показываем только уведомление */}
         <div className="recaptcha-notice">
           <small>
-            Эта форма защищена reCAPTCHA. Применяются{' '}
+            {t('publicQueueForm.recaptcha.notice')}{' '}
             <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
-              Политика конфиденциальности
+              {t('publicQueueForm.recaptcha.privacyPolicy')}
             </a>{' '}
-            и{' '}
+            {t('publicQueueForm.recaptcha.and')}{' '}
             <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">
-              Условия использования
+              {t('publicQueueForm.recaptcha.termsOfService')}
             </a>{' '}
-            Google.
+            {t('publicQueueForm.recaptcha.google')}.
           </small>
         </div>
         

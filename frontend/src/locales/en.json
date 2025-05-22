@@ -214,6 +214,14 @@
       "busy": "Busy",
       "paused": "On break"
     },
+    "recaptcha": {
+      "notice": "This form is protected by reCAPTCHA. The Google",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "google": "Google",
+      "and": "and",
+      "apply": "apply"
+    },
     "programs": {
       "bachelor": {
         "accounting": "Accounting",

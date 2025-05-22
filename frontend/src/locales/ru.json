@@ -213,6 +213,13 @@
       "busy": "Занят",
       "paused": "На перерыве"
     },
+    "recaptcha": {
+      "notice": "Эта форма защищена reCAPTCHA. Применяются",
+      "privacyPolicy": "Политика конфиденциальности",
+      "termsOfService": "Условия использования",
+      "google": "Google",
+      "and": "и"
+    },
     "programs": {
       "bachelor": {
         "accounting": "Бухгалтерский учёт",

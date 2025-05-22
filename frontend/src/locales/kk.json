@@ -210,6 +210,13 @@
       "busy": "Бос емес",
       "paused": "Үзіліс"
     },
+    "recaptcha": {
+      "notice": "Бұл форма reCAPTCHA арқылы қорғалған. Қолданылады",
+      "privacyPolicy": "Құпиялылық саясаты",
+      "termsOfService": "Пайдалану шарттары",
+      "google": "Google",
+      "and": "және"
+    },
     "programs": {
       "bachelor": {
         "accounting": "Бухгалтерлік есеп",
