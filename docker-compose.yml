@@ -45,6 +45,20 @@ services:
     networks:
       - app-network
 
+  # Добавляем Adminer для управления базой данных
+  adminer:
+    image: adminer:4.8.1
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=db
+      - ADMINER_DESIGN=flat
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - app-network
+
   nginx:
     image: nginx:alpine
     ports:
@@ -56,6 +70,7 @@ services:
     depends_on:
       - frontend
       - backend
+      - adminer
     restart: unless-stopped
     networks:
       - app-network
