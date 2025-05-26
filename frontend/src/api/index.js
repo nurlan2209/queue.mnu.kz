@@ -11,6 +11,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+    console.log('Request:', config.url);
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -18,6 +19,14 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API error:', error.response?.config.url, error.message); // Логируем ошибки
+    return Promise.reject(error);
+  }
 );
 
 export const createQueueEntry = async (data) => {

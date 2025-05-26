@@ -39,9 +39,11 @@ services:
       - "5173:5173"
     environment:
       - VITE_API_URL=/api
+      - NODE_DEBUG=core
     depends_on:
       - backend
     restart: unless-stopped
+    mem_limit: 768
     networks:
       - app-network
 
