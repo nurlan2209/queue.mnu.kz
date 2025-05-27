@@ -176,38 +176,6 @@ const AdmissionQueue = () => {
                 </p>
               </div>
               <div className="card-actions1">
-                {entry.status === 'waiting' && (
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => handleUpdateStatus(entry.id, 'in_progress')}
-                  >
-                    {t('admissionQueue.actions.start')}
-                  </button>
-                )}
-                {entry.status === 'in_progress' && (
-                  <button
-                    className="btn btn-success btn-sm"
-                    onClick={() => handleUpdateStatus(entry.id, 'completed')}
-                  >
-                    {t('admissionQueue.actions.complete')}
-                  </button>
-                )}
-                {(entry.status === 'waiting' || entry.status === 'in_progress') && (
-                  <button
-                    className="btn btn-warning btn-sm"
-                    onClick={() => handleUpdateStatus(entry.id, 'paused')}
-                  >
-                    {t('admissionQueue.actions.pause')}
-                  </button>
-                )}
-                {entry.status === 'paused' && (
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => handleUpdateStatus(entry.id, 'waiting')}
-                  >
-                    {t('admissionQueue.actions.resume')}
-                  </button>
-                )}
                 <button
                   className="btn btn-danger btn-sm"
                   onClick={() => handleDeleteEntry(entry.id)}

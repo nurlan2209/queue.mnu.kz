@@ -176,7 +176,7 @@
     "error": "Error during registration"
   },
   "queueTicket": {
-  "title": "Electronic Queue Ticket",
+  "title": "Queue Ticket",
   "fullName": "Full Name",
   "phone": "Phone",
   "programs": "Educational Programs",
