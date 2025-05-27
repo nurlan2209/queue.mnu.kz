@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 from typing import List
+from datetime import datetime
 from app.database import get_db
 from app.models.queue import QueueEntry, QueueStatus
 from app.models.user import User
@@ -66,24 +67,45 @@ def add_to_queue(
     db: Session = Depends(get_db)
 ):
     """Add applicant to the queue (public endpoint)"""
-    # Заменяем асинхронный вызов на синхронный
+    print(f"🚀 Получены данные: {queue_data}")
+    
+    # Проверяем капчу
     captcha_valid = verify_captcha(queue_data.captcha_token, request.client.host)
     if not captcha_valid:
+        print("❌ Капча не прошла проверку")
         raise HTTPException(status_code=400, detail="Invalid captcha")
+    
+    print("✅ Капча прошла проверку")
+    
+    # Проверяем, нет ли уже заявки с таким телефоном
     existing_entry = db.query(QueueEntry).filter(
         QueueEntry.phone == queue_data.phone,
         QueueEntry.status.in_([QueueStatus.WAITING, QueueStatus.IN_PROGRESS])
     ).first()
+    
     if existing_entry:
+        print(f"❌ Заявка уже существует: {existing_entry.id}")
         raise HTTPException(status_code=400, detail="Вы уже стоите в очереди")
+    
+    # Проверяем сотрудника
     if queue_data.assigned_employee_name:
         employee = db.query(User).filter(
             User.full_name == queue_data.assigned_employee_name,
             User.role == "admission"
         ).first()
         if not employee:
+            print(f"❌ Сотрудник не найден: {queue_data.assigned_employee_name}")
             raise HTTPException(status_code=400, detail="Invalid employee name")
-    return create_queue_entry(db, queue_data)
+        print(f"✅ Сотрудник найден: {employee.full_name}")
+    
+    # Создаем заявку
+    try:
+        result = create_queue_entry(db, queue_data)
+        print(f"✅ Заявка создана: {result.id}, номер: {result.queue_number}")
+        return result
+    except Exception as e:
+        print(f"❌ Ошибка создания заявки: {e}")
+        raise HTTPException(status_code=500, detail=f"Error creating queue entry: {str(e)}")
 
 @router.get("/queue/check", response_model=PublicQueueResponse)
 def check_queue_by_name(

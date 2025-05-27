@@ -6,7 +6,7 @@ import QueueTicket from '../../components/QueueTicket/QueueTicket';
 import { useTranslation } from 'react-i18next';
 import './PublicQueueForm.css';
 
-const RECAPTCHA_SITE_KEY = "6Lf_mUQrAAAAALV5gCmjflOGMl5h-RiXvTNeM2UZ";
+const RECAPTCHA_SITE_KEY = "6LfOR0orAAAAAN7I_8_LpEJ0Ymu4ZDwPk5XZALN1";
 
 const BACHELOR_PROGRAMS = [
   'accounting',
@@ -182,6 +182,7 @@ const PublicQueueForm = () => {
       setLoading(true);
       setError(null);
       
+      
       // Выполняем reCAPTCHA v3
       const captchaToken = await executeRecaptcha('submit_queue_form');
       
@@ -190,26 +191,50 @@ const PublicQueueForm = () => {
         setLoading(false);
         return;
       }
-      const dataToSend = { ...formData, form_language: i18n.language, captcha_token: captchaToken };
+
+      // ИСПРАВЛЕНИЕ: Правильная структура данных для API
+      const dataToSend = {
+        full_name: formData.full_name,
+        phone: formData.phone,
+        programs: [formData.program], // Отправляем как массив
+        notes: formData.notes || '',
+        assigned_employee_name: formData.assigned_employee_name,
+        captcha_token: captchaToken,
+        form_language: i18n.language
+      };
+
+      
       const response = await createQueueEntry(dataToSend);
       
-      // После успешной отправки проверяем статус очереди по имени
+      // Создаем базовый талон из ответа сервера
+      const basicTicketData = {
+        ...response,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        programs: [formData.program],
+        assigned_employee_name: formData.assigned_employee_name,
+        form_language: i18n.language,
+        created_at: new Date().toISOString()
+      };
+
+      console.log('🎫 Создаем базовый талон:', basicTicketData);
+      
+      // Пытаемся получить подробную информацию о заявке
       try {
         const queueStatus = await queueAPI.checkQueueByName(formData.full_name);
-        const ticketData = {
-          ...response,
-          ...queueStatus.data,
-          full_name: formData.full_name,
-          phone: formData.phone,
-          programs: formData.program,
-          assigned_employee_name: formData.assigned_employee_name
-        };
-        setTicket(ticketData);
         
-        // Сохраняем талон в localStorage
-        localStorage.setItem('queueTicket', JSON.stringify(ticketData));
+        const enhancedTicketData = {
+          ...basicTicketData,
+          ...queueStatus.data
+        };
+        
+        setTicket(enhancedTicketData);
+        localStorage.setItem('queueTicket', JSON.stringify(enhancedTicketData));
+        
       } catch (checkError) {
-        console.error("Не удалось получить подробную информацию о талоне:", checkError);
+        
+        setTicket(basicTicketData);
+        localStorage.setItem('queueTicket', JSON.stringify(basicTicketData));
       }
       
       setSuccess(true);
@@ -224,10 +249,18 @@ const PublicQueueForm = () => {
       
       // Обновляем количество в очереди
       queueAPI.getQueueCount()
-        .then((response) => setQueueCount(response.data.count))
-        .catch(() => setQueueCount(null));
+        .then((response) => {
+          setQueueCount(response.data.count);
+        })
+        .catch((err) => {
+          setQueueCount(null);
+        });
+        
     } catch (err) {
-      setError(err.response?.data?.detail || t('publicQueueForm.error'));
+      console.error('❌ Ошибка отправки формы:', err);
+      const errorMessage = err.response?.data?.detail || t('publicQueueForm.error');
+      console.error('❌ Сообщение об ошибке:', errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -253,11 +286,12 @@ const PublicQueueForm = () => {
           onReturn={() => {
             setSuccess(false);
             setTicket(null);
+            localStorage.removeItem('queueTicket');
           }} 
         />
       </div>
     );
-  } else if (success) {
+  } else if (success && !ticket) {
     return (
       <div className="public-form-container">
         <div className="success-message">
@@ -271,7 +305,9 @@ const PublicQueueForm = () => {
           )}
           <button
             className="btn btn-primary"
-            onClick={() => setSuccess(false)}
+            onClick={() => {
+              setSuccess(false);
+            }}
             style={{ marginTop: '1rem' }}
           >
             {t('publicQueueForm.backButton')}
@@ -280,6 +316,7 @@ const PublicQueueForm = () => {
       </div>
     );
   }
+
 
   return (
     <div className={`public-form-container ${categoryStates.bachelor || categoryStates.master || categoryStates.doctorate ? 'modal-active' : ''}`}>

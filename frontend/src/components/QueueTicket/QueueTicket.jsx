@@ -68,15 +68,22 @@ const QueueTicket = ({ ticket, onReturn }) => {
             <span className="info-value">{ticket.phone}</span>
           </div>
           
-          <div className="ticket-info-row">
-            <span className="ticket-info-label">{t('queueTicket.programs')}</span>
-            <span className="ticket-info-value">
-              {ticket.programs.map((program, index) => (
-                <React.Fragment key={program}>
-                  <ProgramTranslator programCode={program} formLanguage={ticket.form_language} />
-                  {index < ticket.programs.length - 1 && ', '}
-                </React.Fragment>
-              ))}
+          <div className="info-row">
+            <span className="info-label">{t('queueTicket.programs')}:</span>
+            <span className="info-value">
+              {Array.isArray(ticket.programs) ? (
+                ticket.programs.map((program, index) => (
+                  <React.Fragment key={program}>
+                    <ProgramTranslator programCode={program} formLanguage={ticket.form_language} />
+                    {index < ticket.programs.length - 1 && ', '}
+                  </React.Fragment>
+                ))
+              ) : (
+                // Если programs не массив, пробуем обработать как строку
+                typeof ticket.programs === 'string' ? 
+                  <ProgramTranslator programCode={ticket.programs} formLanguage={ticket.form_language} /> :
+                  ticket.programs || '-'
+              )}
             </span>
           </div>
           
