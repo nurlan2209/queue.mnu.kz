@@ -47,7 +47,7 @@ const PublicQueueForm = () => {
   const { t, i18n } = useTranslation();
   const { isReady, isLoading, executeRecaptcha } = useRecaptcha(RECAPTCHA_SITE_KEY);
   
-const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     full_name: '',
     phone: '+7',
     programs: [],
@@ -224,6 +224,16 @@ const [formData, setFormData] = useState({
     }
   };
 
+  const renderStatusBadge = (status) => {
+    const statusMap = {
+      available: { text: t('publicQueueForm.employeeStatus.available'), class: 'status-available' },
+      busy: { text: t('publicQueueForm.employeeStatus.busy'), class: 'status-busy' },
+      paused: { text: t('publicQueueForm.employeeStatus.paused'), class: 'status-paused' },
+    };
+    const badge = statusMap[status];
+    return badge ? <span className={`status-badge ${badge.class}`}>{badge.text}</span> : null;
+  };
+
   if (success && ticket) {
     return (
       <div className="public-form-container">
@@ -285,11 +295,14 @@ const [formData, setFormData] = useState({
             <select id="assigned_employee_name" name="assigned_employee_name" value={formData.assigned_employee_name} onChange={handleChange} required>
               <option value="" disabled hidden>{t('publicQueueForm.selectEmployee')}</option>
               {employees.map((emp) => (
-                <option key={emp.name} value={emp.name}>{emp.name}</option>
+                <option key={emp.name} value={emp.name}>
+                  {emp.name} — {t(`publicQueueForm.employeeStatus.${emp.status}`)}
+                </option>
               ))}
             </select>
           </div>
         </div>
+
         <div className="form-group">
           <label className="field-label"><FaGraduationCap className="field-icon" />{t('publicQueueForm.programsLabel')}</label>
           <div className="programs-list">
@@ -313,7 +326,7 @@ const [formData, setFormData] = useState({
             ))}
           </div>
         </div>
-        
+
         <div className="recaptcha-notice">
           <small>
             {t('publicQueueForm.recaptcha.notice')}
@@ -323,10 +336,11 @@ const [formData, setFormData] = useState({
             {t('publicQueueForm.recaptcha.google')}
           </small>
         </div>
+
         <button 
-        type="submit" 
-        className="btn btn-submit" 
-        disabled={loading || !isReady}
+          type="submit" 
+          className="btn btn-submit" 
+          disabled={loading || !isReady}
         >
           {loading ? t('publicQueueForm.submitting') : t('publicQueueForm.submitButton')}
         </button>

@@ -14,12 +14,12 @@ const QueueDisplay = () => {
     is_enabled: false
   });
   const [isAnnouncementPlaying, setIsAnnouncementPlaying] = useState(false);
-  
+
   // Ссылки на элементы
   const iframeRef = useRef(null);
   const audioContextRef = useRef(null);
   const gainNodeRef = useRef(null);
-  
+
   // Функция для извлечения YouTube ID из URL
   const extractYouTubeId = (url) => {
     if (!url) return null;
@@ -27,7 +27,7 @@ const QueueDisplay = () => {
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
-  
+
   // Функция для получения данных очереди
   const fetchQueueData = async () => {
     try {
@@ -74,13 +74,13 @@ const QueueDisplay = () => {
       try {
         const iframe = iframeRef.current;
         const volume = shouldMute ? 10 : 100; // 10% или 100%
-        
+
         // Попытка отправить команду YouTube API
         iframe.contentWindow?.postMessage(
           `{"event":"command","func":"setVolume","args":[${volume}]}`,
           'https://www.youtube.com'
         );
-        
+
         console.log(`🔊 Попытка установить громкость: ${volume}%`);
       } catch (error) {
         console.error('❌ Ошибка управления громкостью через postMessage:', error);
@@ -118,19 +118,19 @@ const QueueDisplay = () => {
   // Слушаем изменения в localStorage
   useEffect(() => {
     let lastTimestamp = 0;
-    
+
     const handleStorageChange = (e) => {
       if (e.key === 'announcementStatus') {
         const status = JSON.parse(e.newValue || '{}');
-        
+
         // Игнорируем быстрые дублирующиеся события
         if (status.timestamp && Math.abs(status.timestamp - lastTimestamp) < 100) {
           return;
         }
         lastTimestamp = status.timestamp;
-        
+
         console.log('📢 Статус объявления:', status.isPlaying ? 'НАЧАЛОСЬ' : 'ЗАКОНЧИЛОСЬ');
-        
+
         setIsAnnouncementPlaying(status.isPlaying);
         controlVideoVolume(status.isPlaying);
       }
@@ -158,22 +158,22 @@ const QueueDisplay = () => {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
-  
+
   // Обновляем данные каждые 5 секунд
   useEffect(() => {
     fetchQueueData();
     fetchVideoSettings();
-    
+
     const interval = setInterval(() => {
       fetchQueueData();
       fetchVideoSettings();
       setCurrentTime(new Date());
     }, 5000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
-    const getCardColorClass = (status) => {
+  const getCardColorClass = (status) => {
     switch (status) {
       case 'available':
         return 'card-blue';
@@ -187,7 +187,7 @@ const QueueDisplay = () => {
   };
 
   const videoId = videoSettings.youtube_url ? extractYouTubeId(videoSettings.youtube_url) : null;
-  
+
   return (
     <div className="queue-display">
       <header className="display-header">
@@ -226,9 +226,9 @@ const QueueDisplay = () => {
         ))}
       </div>
 
-       {/* Блок с видео внизу экрана */}
+      {/* Блок с видео внизу экрана */}
       {videoSettings.is_enabled && videoId && (
-        <div className="video-section">
+        <div className="video-section" style={{ alignSelf: 'flex-end', marginTop: 'auto' }}>
           <div className="video-container">
             <iframe
               ref={iframeRef}

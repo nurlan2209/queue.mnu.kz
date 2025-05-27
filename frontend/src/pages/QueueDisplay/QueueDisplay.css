@@ -2,13 +2,13 @@
   background-color: #F6F6F6;
   color: #0A1F44;
   min-height: 100vh;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
   padding: 20px;
 }
 
-/* --- Header Section --- */
+/* Header */
 .display-header {
   display: flex;
   justify-content: space-between;
@@ -29,6 +29,7 @@
   font-weight: bold;
   margin: 0;
   color: #0A1F44;
+  text-transform: uppercase;
 }
 
 .sub-title {
@@ -36,6 +37,7 @@
   margin-top: 0.5rem;
   font-weight: 500;
   color: #0A1F44;
+  text-transform: uppercase;
 }
 
 .wait-message {
@@ -69,7 +71,7 @@
   font-weight: bold;
 }
 
-/* --- Cards Section --- */
+/* Cards */
 .queue-entries {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
@@ -80,27 +82,24 @@
 .queue-card {
   border-radius: 12px;
   padding: 20px;
-  background-color: #E3E3E3;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: 180px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  color: white;
 }
 
 .card-blue {
-  background-color: #D6EAFF;
-  color: #0A1F44;
+  background-color: #001965;
 }
 
 .card-green {
-  background-color: #DFFFD6;
-  color: #1F4B1F;
+  background-color: #247E20;
 }
 
 .card-purple {
-  background-color: #F9D6FF;
-  color: #5A2E6B;
+  background-color: #612196;
 }
 
 .queue-card-header {
@@ -120,12 +119,12 @@
   margin-bottom: 10px;
 }
 
-.queue-number {
-  color: inherit;
-}
-
-.desk-number {
-  color: inherit;
+.queue-number,
+.desk-number,
+.queue-label,
+.desk-label,
+.consultant-name {
+  color: white;
 }
 
 .consultant-name {
@@ -133,11 +132,12 @@
   font-weight: 600;
 }
 
-/* --- Video Section --- */
+/* Video */
 .video-section {
-  margin: 30px auto;
-  max-width: 800px;
+  margin-top: 30px;
+  align-self: flex-end;
   width: 100%;
+  max-width: 500px;
 }
 
 .video-container {
@@ -155,7 +155,7 @@
   border: none;
 }
 
-/* --- Responsive --- */
+/* Responsive */
 @media (max-width: 768px) {
   .main-title {
     font-size: 2rem;
@@ -175,5 +175,10 @@
 
   .queue-card-values {
     font-size: 2rem;
+  }
+
+  .video-section {
+    max-width: 100%;
+    margin-top: 20px;
   }
 }
