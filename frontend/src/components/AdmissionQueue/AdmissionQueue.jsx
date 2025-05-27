@@ -138,18 +138,18 @@ const AdmissionQueue = () => {
       ) : queue.length === 0 ? (
         <p className="empty-queue">{t('admissionQueue.emptyQueue')}</p>
       ) : (
-        <div className="queue-cards">
+        <div className="queue-cards1">
           {queue.map((entry) => (
-            <div key={entry.id} className={`queue-card status-${entry.status}`}>
-              <div className="card-header">
-                <span className="queue-number">
+            <div key={entry.id} className={`queue-card1 status-${entry.status}`}>
+              <div className="card-header1">
+                <span className="queue-number1">
                   {t('admissionQueue.queueNumber', { number: entry.queue_number })}
                 </span>
                 <span className={`status-badge status-${entry.status}`}>
                   {getStatusText(entry.status)}
                 </span>
               </div>
-              <div className="card-body">
+              <div className="card-body1">
                 <p>
                   <strong>{t('admissionQueue.card.fullName')}</strong> {entry.full_name}
                 </p>
@@ -175,7 +175,7 @@ const AdmissionQueue = () => {
                   {new Date(entry.created_at).toLocaleTimeString(i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
                 </p>
               </div>
-              <div className="card-actions">
+              <div className="card-actions1">
                 {entry.status === 'waiting' && (
                   <button
                     className="btn btn-primary btn-sm"

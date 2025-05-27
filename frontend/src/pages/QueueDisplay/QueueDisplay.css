@@ -127,6 +127,12 @@
   color: white;
 }
 
+.queue-number {
+  font-size: 3rem;
+  font-weight: 800;
+  color: inherit;
+}
+
 .consultant-name {
   font-size: 1rem;
   font-weight: 600;

@@ -76,10 +76,6 @@
     align-items: flex-start;
   }
   
-  .status-badge {
-    margin-top: 10px;
-  }
-  
   .status-actions {
     flex-direction: column;
   }

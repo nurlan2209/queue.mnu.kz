@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { FaUser, FaPhoneAlt, FaStar, FaGraduationCap } from 'react-icons/fa';
 import { useRecaptcha } from '../../hooks/useRecaptcha';
 import { createQueueEntry, getEmployees, queueAPI } from '../../api';
-import QueueStatusCheck from '../../components/QueueStatusCheck/QueueStatusCheck';
 import QueueTicket from '../../components/QueueTicket/QueueTicket';
 import { useTranslation } from 'react-i18next';
 import './PublicQueueForm.css';
@@ -50,7 +49,7 @@ const PublicQueueForm = () => {
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '+7',
-    programs: [],
+    program: '',
     notes: '',
     assigned_employee_name: '',
     captcha_token: null,
@@ -150,15 +149,25 @@ const PublicQueueForm = () => {
   };
 
   const handleProgramChange = (e) => {
-    const { value, checked } = e.target;
-    setFormData({
-      ...formData,
-      programs: checked ? [...formData.programs, value] : formData.programs.filter(p => p !== value)
+    const { value } = e.target;
+    setFormData({ ...formData, program: value });
+    // Закрыть все категории после выбора
+    setCategoryStates({
+      bachelor: false,
+      master: false,
+      doctorate: false,
     });
   };
 
   const toggleCategory = (category) => {
     setCategoryStates({ ...categoryStates, [category]: !categoryStates[category] });
+  };
+
+  const getProgramCategory = (program) => {
+    if (BACHELOR_PROGRAMS.includes(program)) return 'bachelor';
+    if (MASTER_PROGRAMS.includes(program)) return 'master';
+    if (DOCTORATE_PROGRAMS.includes(program)) return 'doctorate';
+    return '';
   };
 
   const handleSubmit = async (e) => {
@@ -192,7 +201,7 @@ const PublicQueueForm = () => {
           ...queueStatus.data,
           full_name: formData.full_name,
           phone: formData.phone,
-          programs: formData.programs,
+          programs: formData.program,
           assigned_employee_name: formData.assigned_employee_name
         };
         setTicket(ticketData);
@@ -207,7 +216,7 @@ const PublicQueueForm = () => {
       setFormData({
         full_name: '',
         phone: '+7',
-        programs: [],
+        program: '',
         notes: '',
         assigned_employee_name: '',
         captcha_token: null,
@@ -226,13 +235,15 @@ const PublicQueueForm = () => {
 
   const renderStatusBadge = (status) => {
     const statusMap = {
-      available: { text: t('publicQueueForm.employeeStatus.available'), class: 'status-available' },
-      busy: { text: t('publicQueueForm.employeeStatus.busy'), class: 'status-busy' },
-      paused: { text: t('publicQueueForm.employeeStatus.paused'), class: 'status-paused' },
+      available: { text: t('publicQueueForm.employeeStatus.available'), class: 'status-available1' },
+      busy: { text: t('publicQueueForm.employeeStatus.busy'), class: 'status-busy1' },
+      paused: { text: t('publicQueueForm.employeeStatus.paused'), class: 'status-paused1' },
     };
     const badge = statusMap[status];
-    return badge ? <span className={`status-badge ${badge.class}`}>{badge.text}</span> : null;
+    return badge ? <span className={`status-badge1 ${badge.class}`}>{badge.text}</span> : null;
   };
+
+  const [employeeDropdownOpen, setEmployeeDropdownOpen] = useState(false);
 
   if (success && ticket) {
     return (
@@ -290,21 +301,50 @@ const PublicQueueForm = () => {
           </div>
         </div>
         <div className="form-group">
-          <div className="input-wrapper select-wrapper">
-            <FaStar className="field-icon" />
-            <select id="assigned_employee_name" name="assigned_employee_name" value={formData.assigned_employee_name} onChange={handleChange} required>
-              <option value="" disabled hidden>{t('publicQueueForm.selectEmployee')}</option>
-              {employees.map((emp) => (
-                <option key={emp.name} value={emp.name}>
-                  {emp.name} — {t(`publicQueueForm.employeeStatus.${emp.status}`)}
-                </option>
-              ))}
-            </select>
+          <div className="employee-selector">
+            <div className="employee-selector-header" onClick={() => setEmployeeDropdownOpen(!employeeDropdownOpen)}>
+              <FaStar className="field-icon" />
+              <span className="selected-employee">
+                {formData.assigned_employee_name || t('publicQueueForm.selectEmployee')}
+              </span>
+              <span className={`dropdown-arrow ${employeeDropdownOpen ? 'open' : ''}`}>▼</span>
+            </div>
+            
+            {employeeDropdownOpen && (
+              <div className="employee-dropdown">
+                {employees.map((emp) => (
+                  <div 
+                    key={emp.name} 
+                    className="employee-option"
+                    onClick={() => {
+                      setFormData({ ...formData, assigned_employee_name: emp.name });
+                      setEmployeeDropdownOpen(false);
+                    }}
+                  >
+                    <div className="employee-info">
+                      <span className="employee-name">{emp.name}</span>
+                      {renderStatusBadge(emp.status)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         <div className="form-group">
-          <label className="field-label"><FaGraduationCap className="field-icon" />{t('publicQueueForm.programsLabel')}</label>
+          <label className="field-label">
+            <FaGraduationCap className="field-icon" />
+            {t('publicQueueForm.programsLabel')}
+          </label>
+          
+          {/* Показать выбранную программу */}
+          {formData.program && (
+            <div className="selected-program">
+              ✓ {t(`publicQueueForm.programs.${getProgramCategory(formData.program)}.${formData.program}`)}
+            </div>
+          )}
+          
           <div className="programs-list">
             {['bachelor', 'master', 'doctorate'].map((cat) => (
               <React.Fragment key={cat}>
@@ -316,7 +356,14 @@ const PublicQueueForm = () => {
                   <div className={`category-content ${cat}`}>
                     {(cat === 'bachelor' ? BACHELOR_PROGRAMS : cat === 'master' ? MASTER_PROGRAMS : DOCTORATE_PROGRAMS).map((program) => (
                       <div className="program-item" key={program}>
-                        <input type="checkbox" id={`program-${program}`} value={program} checked={formData.programs.includes(program)} onChange={handleProgramChange} />
+                        <input 
+                          type="radio" 
+                          id={`program-${program}`} 
+                          name="program" 
+                          value={program} 
+                          checked={formData.program === program} 
+                          onChange={handleProgramChange} 
+                        />
                         <label htmlFor={`program-${program}`}>{t(`publicQueueForm.programs.${cat}.${program}`)}</label>
                       </div>
                     ))}

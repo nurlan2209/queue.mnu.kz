@@ -130,7 +130,7 @@
   width: 100%;
 }
 
-.status-badge {
+.status-badge1 {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   font-size: 0.85rem;
@@ -138,19 +138,20 @@
   border-radius: 6px;
   margin-left: 0.5rem;
   vertical-align: middle;
+
 }
 
-.status-available {
+.status-available1 {
   background-color: #d4f4d4;
   color: #1f7a1f;
 }
 
-.status-busy {
+.status-busy1 {
   background-color: #fcdede;
   color: #b21c1c;
 }
 
-.status-paused {
+.status-paused1 {
   background-color: #fff3cd;
   color: #856404;
 }
@@ -397,4 +398,108 @@
     right: 10px;
     visibility: hidden;
   }
+}
+
+.employee-selector {
+  position: relative;
+}
+
+.employee-selector-header {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.employee-selector-header:hover {
+  border-color: var(--secondary-color);
+}
+
+.employee-selector-header .field-icon {
+  margin-right: 0.75rem;
+  color: var(--light-text);
+  font-size: 1rem;
+}
+
+.selected-employee {
+  flex: 1;
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.dropdown-arrow {
+  color: var(--light-text);
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.employee-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.employee-option {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.employee-option:last-child {
+  border-bottom: none;
+}
+
+.employee-option:hover {
+  background-color: #f8f9fa;
+}
+
+.employee-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.employee-name {
+  font-size: 1rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.selected-program {
+  background-color: rgba(26, 45, 107, 0.1);
+  border: 1px solid var(--primary-color);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.program-item input[type="radio"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--primary-color);
+  margin: 0;
 }
