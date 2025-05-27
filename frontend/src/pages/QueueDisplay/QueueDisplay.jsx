@@ -173,63 +173,74 @@ const QueueDisplay = () => {
     return () => clearInterval(interval);
   }, []);
 
+    const getCardColorClass = (status) => {
+    switch (status) {
+      case 'available':
+        return 'card-blue';
+      case 'paused':
+        return 'card-green';
+      case 'busy':
+        return 'card-purple';
+      default:
+        return 'card-blue';
+    }
+  };
+
   const videoId = videoSettings.youtube_url ? extractYouTubeId(videoSettings.youtube_url) : null;
   
   return (
     <div className="queue-display">
-      <div className="display-header">
-        <h1>{t('queueDisplay.title')}</h1>
-        <div className="current-time">
-          {currentTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+      <header className="display-header">
+        <div className="header-texts">
+          <h1 className="main-title">ЭЛЕКТРОННАЯ ОЧЕРЕДЬ</h1>
+          <h2 className="sub-title">ПРИЕМНОЙ КОМИССИИ MNU</h2>
+          <div className="wait-message">Пожалуйста, ожидайте вызова вашего талона.</div>
         </div>
-        {isAnnouncementPlaying && <span style={{color: 'red', marginLeft: '20px'}}>📢 ОБЪЯВЛЕНИЕ</span>}
-      </div>
-      
+        <div className="header-meta">
+          <img src="/logo_blue.svg" alt="MNU Logo" className="mnu-logo" />
+          <div className="display-time-box">
+            {currentTime.toLocaleTimeString('ru-RU', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </div>
+        </div>
+      </header>
+
       <div className="queue-entries">
-        {loading && queueEntries.length === 0 ? (
-          <div className="loading-message">{t('queueDisplay.loading')}</div>
-        ) : error ? (
-          <div className="error-message">{error}</div>
-        ) : queueEntries.length === 0 ? (
-          <div className="no-entries">{t('queueDisplay.noEntries')}</div>
-        ) : (
-          queueEntries.map(entry => {
-            const employeeName = entry.assigned_employee_name;
-            const deskNumber = entry.employee_desk || t('queueDisplay.noDesk');
-            
-            return (
-              <div className="queue-entry" key={entry.id}>
-                <div className="entry-number">{entry.queue_number}</div>
-                <div className="entry-arrow">→</div>
-                <div className="entry-desk">{deskNumber}</div>
-                <div className="entry-details">
-                  <div className="employee-name">{employeeName}</div>
-                </div>
-              </div>
-            );
-          })
-        )}
+        {queueEntries.map((entry) => (
+          <div
+            key={entry.id}
+            className={`queue-card ${getCardColorClass(entry.employee_status)}`}
+          >
+            <div className="queue-card-header">
+              <div className="queue-label">№ ТАЛОНА</div>
+              <div className="desk-label">№ КОНСУЛЬТАНТА</div>
+            </div>
+            <div className="queue-card-values">
+              <div className="queue-number">{entry.queue_number}</div>
+              <div className="desk-number">{entry.employee_desk}</div>
+            </div>
+            <div className="consultant-name">{entry.assigned_employee_name}</div>
+          </div>
+        ))}
       </div>
-      
-      {/* Блок с видео внизу экрана */}
+
+       {/* Блок с видео внизу экрана */}
       {videoSettings.is_enabled && videoId && (
         <div className="video-section">
           <div className="video-container">
             <iframe
               ref={iframeRef}
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=1&showinfo=0&rel=0&modestbranding=1&enablejsapi=1&origin=${window.location.origin}`}
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&enablejsapi=1`}
               title="Information Video"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="autoplay; encrypted-media"
               allowFullScreen
             ></iframe>
           </div>
         </div>
       )}
-      
-      <div className="display-footer">
-        <p>{t('queueDisplay.waitMessage')}</p>
-      </div>
     </div>
   );
 };

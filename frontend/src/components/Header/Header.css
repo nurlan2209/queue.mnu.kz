@@ -1,19 +1,28 @@
+:root {
+  --primary-color: #1A2D6B;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --light-blue: #D6EAFF;
+}
+
 .header {
-  background-color: #0F0F0F;
+  background-color: var(--light-blue);
   box-shadow: 0 1px 3px var(--shadow-color);
   padding: 1rem 0;
+  border-bottom: 1px solid var(--primary-color);
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
 }
 
 .logo a {
@@ -23,70 +32,36 @@
 }
 
 .logo-image {
-  height: 40px;
+  height: 42px;
   width: auto;
-}
-
-.logo-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-family: 'Oswald', sans-serif;
-  color: white;
-  transition: color 0.2s ease;
-}
-
-.logo a:hover .logo-text {
-  color: var(--primary-color);
 }
 
 .nav {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: auto;
 }
 
-.user-nav {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.user-name {
-  font-weight: 600;
-  color: white;
-  font-family: 'Oswald', sans-serif;
-}
-
-.auth-nav {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* Переключатель языка */
 .language-switcher {
   position: relative;
-  margin-right: 1rem;
 }
 
 .language-text {
-  color: white;
+  color: var(--primary-color);
   font-family: 'Oswald', sans-serif;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  transition: color 0.2s ease;
-}
-
-.language-text:hover {
-  color: #d3d3d3; /* Легкое посветление при наведении */
 }
 
 .chevron-icon {
   font-size: 0.8rem;
   transition: transform 0.2s ease;
+  color: var(--primary-color);
 }
 
 .chevron-icon.rotated {
@@ -96,20 +71,19 @@
 .language-menu {
   position: absolute;
   top: 100%;
-  left: 0;
-  background-color: #0F0F0F;
-  border: 1px solid #333;
+  right: 0;
+  background-color: white;
+  border: 1px solid var(--primary-color);
   border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   list-style: none;
   padding: 0.25rem 0;
   margin: 0;
-  min-width: 100px;
   z-index: 1000;
 }
 
 .language-menu li {
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #eee;
 }
 
 .language-menu li:last-child {
@@ -118,64 +92,61 @@
 
 .language-menu button {
   width: 100%;
-  padding: 0.25rem 1rem;
+  padding: 0.5rem 1rem;
   background: none;
   border: none;
-  color: white;
+  color: var(--primary-color);
   font-family: 'Oswald', sans-serif;
   font-size: 1rem;
   text-align: left;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .language-menu button:hover {
-  color: #d3d3d3; /* Легкое посветление при наведении */
+  background-color: #f0f0f0;
 }
 
-/* Responsive */
+/* Responsive Mobile */
 @media (max-width: 576px) {
   .header-content {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .nav {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .logo {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
+    gap: 0.5rem;
   }
 
   .logo-image {
-    height: 32px;
-  }
-
-  .logo-text {
-    font-size: 1.25rem;
+    height: 30px;
+    width: auto;
   }
 
   .language-switcher {
     margin-right: 0;
+    align-self: center;
   }
 
   .language-text {
-    font-size: 0.9rem;
-    padding: 0.2rem 0.4rem;
+    color: #1A2D6B; /* Синий вместо красного */
+    font-weight: 600;
   }
 
-  .language-menu {
-    min-width: 90px;
-    
+  .form-title-main {
+    font-size: 1.5rem;
+    line-height: 1.4;
+    text-align: center;
+    color: #1A2D6B;
   }
 
-  .language-menu button {
-    font-size: 0.9rem;
-    padding: 0.2rem 0.8rem;
+  .form-description {
+    font-size: 0.95rem;
+    text-align: center;
+    color: #5e5e5e;
+    margin-bottom: 1.5rem;
   }
 }
+

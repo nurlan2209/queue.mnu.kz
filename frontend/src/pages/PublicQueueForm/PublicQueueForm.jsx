@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaUser, FaPhoneAlt, FaStar, FaGraduationCap } from 'react-icons/fa';
 import { useRecaptcha } from '../../hooks/useRecaptcha';
 import { createQueueEntry, getEmployees, queueAPI } from '../../api';
 import QueueStatusCheck from '../../components/QueueStatusCheck/QueueStatusCheck';
@@ -46,7 +47,7 @@ const PublicQueueForm = () => {
   const { t, i18n } = useTranslation();
   const { isReady, isLoading, executeRecaptcha } = useRecaptcha(RECAPTCHA_SITE_KEY);
   
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     full_name: '',
     phone: '+7',
     programs: [],
@@ -65,7 +66,7 @@ const PublicQueueForm = () => {
     bachelor: false,
     master: false,
     doctorate: false,
-  });
+  }); 
 
   const formatPhoneNumber = (value) => {
     // Удаляем все нецифровые символы, кроме первого + если он есть
@@ -73,14 +74,8 @@ const PublicQueueForm = () => {
     
     // Добавляем 7 в начало, если его нет или номер начинается с 8
     if (!digitsOnly.startsWith('7')) {
-      if (digitsOnly.startsWith('8')) {
-        digitsOnly = '7' + digitsOnly.substring(1);
-      } else {
-        digitsOnly = '7' + digitsOnly;
-      }
+      digitsOnly = '7' + digitsOnly.substring(digitsOnly.startsWith('8') ? 1 : 0);
     }
-    
-    // Ограничиваем до 11 цифр
     digitsOnly = digitsOnly.substring(0, 11);
     
     // Форматируем строку с маской
@@ -128,19 +123,12 @@ const PublicQueueForm = () => {
         const parsedTicket = JSON.parse(savedTicket);
         setTicket(parsedTicket);
         setSuccess(true);
-      } catch (e) {
+      } catch {
         localStorage.removeItem('queueTicket');
       }
     }
-
-    // Загружаем список сотрудников
-    getEmployees()
-      .then((response) => setEmployees(response))
-      .catch((err) => setError(t('publicQueueForm.employeeLoadError')));
-    // Загружаем количество людей в очереди
-    queueAPI.getQueueCount()
-      .then((response) => setQueueCount(response.data.count))
-      .catch(() => setQueueCount(null));
+    getEmployees().then(setEmployees).catch(() => setError(t('publicQueueForm.employeeLoadError')));
+    queueAPI.getQueueCount().then((res) => setQueueCount(res.data.count)).catch(() => setQueueCount(null));
   }, [t]);
 
   const getEmployeeStatusText = (status) => {
@@ -163,24 +151,14 @@ const PublicQueueForm = () => {
 
   const handleProgramChange = (e) => {
     const { value, checked } = e.target;
-    if (checked) {
-      setFormData({
-        ...formData,
-        programs: [...formData.programs, value],
-      });
-    } else {
-      setFormData({
-        ...formData,
-        programs: formData.programs.filter((program) => program !== value),
-      });
-    }
+    setFormData({
+      ...formData,
+      programs: checked ? [...formData.programs, value] : formData.programs.filter(p => p !== value)
+    });
   };
 
   const toggleCategory = (category) => {
-    setCategoryStates({
-      ...categoryStates,
-      [category]: !categoryStates[category],
-    });
+    setCategoryStates({ ...categoryStates, [category]: !categoryStates[category] });
   };
 
   const handleSubmit = async (e) => {
@@ -199,18 +177,11 @@ const PublicQueueForm = () => {
       const captchaToken = await executeRecaptcha('submit_queue_form');
       
       if (!captchaToken) {
-        setError('Не удалось пройти проверку reCAPTCHA. Попробуйте снова.');
+        setError('Не удалось пройти проверку reCAPTCHA.');
         setLoading(false);
         return;
       }
-      
-      // Обновить язык формы перед отправкой
-      const dataToSend = {
-        ...formData,
-        form_language: i18n.language,
-        captcha_token: captchaToken
-      };
-      
+      const dataToSend = { ...formData, form_language: i18n.language, captcha_token: captchaToken };
       const response = await createQueueEntry(dataToSend);
       
       // После успешной отправки проверяем статус очереди по имени
@@ -290,167 +261,72 @@ const PublicQueueForm = () => {
   }
 
   return (
-    <div className="public-form-container">
-      <h1>{t('publicQueueForm.title')}</h1>
+    <div className={`public-form-container ${categoryStates.bachelor || categoryStates.master || categoryStates.doctorate ? 'modal-active' : ''}`}>
+      <h1 className="form-title-main" style={{ color: '#1A2D6B' }}>{t('publicQueueForm.title')}</h1>
       <p className="form-description">{t('publicQueueForm.description')}</p>
       {error && <div className="alert alert-danger">{error}</div>}
-      
-      {isLoading && (
-        <div className="recaptcha-loading">
-          <p>Загрузка системы защиты...</p>
-        </div>
-      )}
-      
+      {isLoading && <p>Загрузка системы защиты...</p>}
       <form onSubmit={handleSubmit} className="public-queue-form">
         <div className="form-group">
-          <label htmlFor="full_name">{t('publicQueueForm.fullNameLabel')}</label>
-          <input
-            type="text"
-            id="full_name"
-            name="full_name"
-            value={formData.full_name}
-            onChange={handleChange}
-            required
-          />
+          <div className="input-wrapper">
+            <FaUser className="field-icon" />
+            <input type="text" id="full_name" name="full_name" value={formData.full_name} onChange={handleChange} placeholder={t('publicQueueForm.fullNameLabel')} required />
+          </div>
         </div>
         <div className="form-group">
-          <label htmlFor="phone">{t('publicQueueForm.phoneLabel')}</label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handlePhoneChange}
-            onFocus={(e) => {
-              // При получении фокуса, если поле пустое, добавляем +7
-              if (!e.target.value) {
-                setFormData({ ...formData, phone: '+7' });
-              }
-              // Ставим курсор в конец
-              const input = e.target;
-              setTimeout(() => {
-                input.selectionStart = input.selectionEnd = input.value.length;
-              }, 0);
-            }}
-            placeholder="+7 (___) ___-__-__"
-            required
-          />
+          <div className="input-wrapper">
+            <FaPhoneAlt className="field-icon" />
+            <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handlePhoneChange} placeholder={t('publicQueueForm.phoneLabel')} required />
+          </div>
         </div>
         <div className="form-group">
-          <label htmlFor="assigned_employee_name">{t('publicQueueForm.employeeLabel')}</label>
-          <select
-            id="assigned_employee_name"
-            name="assigned_employee_name"
-            value={formData.assigned_employee_name}
-            onChange={handleChange}
-            required
-          >
-            <option value="">{t('publicQueueForm.selectEmployee')}</option>
-            {employees.map((employee) => (
-              <option key={employee.name} value={employee.name}>
-                {employee.name} 
-                {employee.desk ? ` (${t('publicQueueForm.desk', 'Стол')} ${employee.desk})` : ''}
-                {employee.status && employee.status !== 'offline' ? ` - ${getEmployeeStatusText(employee.status)}` : ''}
-              </option>
-            ))}
-          </select>
+          <div className="input-wrapper select-wrapper">
+            <FaStar className="field-icon" />
+            <select id="assigned_employee_name" name="assigned_employee_name" value={formData.assigned_employee_name} onChange={handleChange} required>
+              <option value="" disabled hidden>{t('publicQueueForm.selectEmployee')}</option>
+              {employees.map((emp) => (
+                <option key={emp.name} value={emp.name}>{emp.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="form-group">
-          <label>{t('publicQueueForm.programsLabel')}</label>
+          <label className="field-label"><FaGraduationCap className="field-icon" />{t('publicQueueForm.programsLabel')}</label>
           <div className="programs-list">
-            <div className="category-header" onClick={() => toggleCategory('bachelor')}>
-              <h3 className="program-category">{t('publicQueueForm.bachelor')}</h3>
-              <span className={`toggle-icon ${categoryStates.bachelor ? 'expanded' : ''}`}>
-                {categoryStates.bachelor ? '−' : '+'}
-              </span>
-            </div>
-            {categoryStates.bachelor && (
-              <div className="category-content">
-                {BACHELOR_PROGRAMS.map((program) => (
-                  <div className="program-item" key={program}>
-                    <input
-                      type="checkbox"
-                      id={`program-${program}`}
-                      value={program}
-                      checked={formData.programs.includes(program)}
-                      onChange={handleProgramChange}
-                    />
-                    <label htmlFor={`program-${program}`}>
-                      {t(`publicQueueForm.programs.bachelor.${program}`)}
-                    </label>
+            {['bachelor', 'master', 'doctorate'].map((cat) => (
+              <React.Fragment key={cat}>
+                <div className={`category-header ${cat}`} onClick={() => toggleCategory(cat)}>
+                  <h3 className="program-category">{t(`publicQueueForm.${cat}`)}</h3>
+                  <span className={`toggle-icon ${categoryStates[cat] ? 'expanded' : ''}`}>{categoryStates[cat] ? '−' : '+'}</span>
+                </div>
+                {categoryStates[cat] && (
+                  <div className={`category-content ${cat}`}>
+                    {(cat === 'bachelor' ? BACHELOR_PROGRAMS : cat === 'master' ? MASTER_PROGRAMS : DOCTORATE_PROGRAMS).map((program) => (
+                      <div className="program-item" key={program}>
+                        <input type="checkbox" id={`program-${program}`} value={program} checked={formData.programs.includes(program)} onChange={handleProgramChange} />
+                        <label htmlFor={`program-${program}`}>{t(`publicQueueForm.programs.${cat}.${program}`)}</label>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-            <div className="category-header" onClick={() => toggleCategory('master')}>
-              <h3 className="program-category">{t('publicQueueForm.master')}</h3>
-              <span className={`toggle-icon ${categoryStates.master ? 'expanded' : ''}`}>
-                {categoryStates.master ? '−' : '+'}
-              </span>
-            </div>
-            {categoryStates.master && (
-              <div className="category-content">
-                {MASTER_PROGRAMS.map((program) => (
-                  <div className="program-item" key={program}>
-                    <input
-                      type="checkbox"
-                      id={`program-${program}`}
-                      value={program}
-                      checked={formData.programs.includes(program)}
-                      onChange={handleProgramChange}
-                    />
-                    <label htmlFor={`program-${program}`}>
-                      {t(`publicQueueForm.programs.master.${program}`)}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className="category-header" onClick={() => toggleCategory('doctorate')}>
-              <h3 className="program-category">{t('publicQueueForm.doctorate')}</h3>
-              <span className={`toggle-icon ${categoryStates.doctorate ? 'expanded' : ''}`}>
-                {categoryStates.doctorate ? '−' : '+'}
-              </span>
-            </div>
-            {categoryStates.doctorate && (
-              <div className="category-content">
-                {DOCTORATE_PROGRAMS.map((program) => (
-                  <div className="program-item" key={program}>
-                    <input
-                      type="checkbox"
-                      id={`program-${program}`}
-                      value={program}
-                      checked={formData.programs.includes(program)}
-                      onChange={handleProgramChange}
-                    />
-                    <label htmlFor={`program-${program}`}>
-                      {t(`publicQueueForm.programs.doctorate.${program}`)}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
+                )}
+              </React.Fragment>
+            ))}
           </div>
         </div>
         
         <div className="recaptcha-notice">
           <small>
-            {t('publicQueueForm.recaptcha.notice')}{' '}
-            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
-              {t('publicQueueForm.recaptcha.privacyPolicy')}
-            </a>{' '}
+            {t('publicQueueForm.recaptcha.notice')}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">{t('publicQueueForm.recaptcha.privacyPolicy')}</a>{' '}
             {t('publicQueueForm.recaptcha.and')}{' '}
-            <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">
-              {t('publicQueueForm.recaptcha.termsOfService')}
-            </a>{' '}
-            {t('publicQueueForm.recaptcha.google')}.
+            <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">{t('publicQueueForm.recaptcha.termsOfService')}</a>{' '}
+            {t('publicQueueForm.recaptcha.google')}
           </small>
         </div>
-        
-        <button
-          type="submit"
-          className="btn btn-primary btn-submit"
-          disabled={loading || !isReady}
+        <button 
+        type="submit" 
+        className="btn btn-submit" 
+        disabled={loading || !isReady}
         >
           {loading ? t('publicQueueForm.submitting') : t('publicQueueForm.submitButton')}
         </button>

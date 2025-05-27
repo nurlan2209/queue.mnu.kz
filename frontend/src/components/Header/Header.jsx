@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // Добавлен импорт useLocation
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { FaChevronDown } from 'react-icons/fa';
@@ -9,9 +9,7 @@ const Header = () => {
   const { t, i18n } = useTranslation();
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // Получаем текущий путь
-  
-  // Проверяем, находимся ли мы на странице входа для сотрудников
+  const location = useLocation();
   const isStaffLoginPage = location.pathname === '/staff';
 
   // Состояние для управления видимостью выпадающего меню
@@ -19,26 +17,22 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/'); // Изменено с /login на /
+    navigate('/');
   };
 
   // Обработчик смены языка
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
-    setIsLanguageMenuOpen(false); // Закрываем меню после выбора
+    setIsLanguageMenuOpen(false);
   };
 
   // Текущий язык для отображения
   const currentLanguageLabel = () => {
     switch (i18n.language) {
-      case 'ru':
-        return 'Русский';
-      case 'kk':
-        return 'Қазақша';
-      case 'en':
-        return 'English';
-      default:
-        return 'Русский';
+      case 'ru': return 'Русский';
+      case 'kk': return 'Қазақша';
+      case 'en': return 'English';
+      default: return 'Русский';
     }
   };
 
@@ -48,12 +42,11 @@ const Header = () => {
         <div className="header-content">
           <div className="logo">
             {isStaffLoginPage ? (
-              // Для страницы входа сотрудников - логотип без ссылки
-              <img src="/logo.svg" alt="MNU Logo" className="logo-image" />
+              <img src="/logo_blue.svg" alt="MNU Logo" className="logo-image" />
             ) : (
               // Для остальных страниц - логотип со ссылкой на главную
               <Link to="/">
-                <img src="/logo.svg" alt="MNU Logo" className="logo-image" />
+                <img src="/logo_blue.svg" alt="MNU Logo" className="logo-image" />
               </Link>
             )}
           </div>
@@ -70,21 +63,9 @@ const Header = () => {
               </span>
               {isLanguageMenuOpen && (
                 <ul className="language-menu">
-                  <li>
-                    <button onClick={() => changeLanguage('ru')}>
-                      Русский
-                    </button>
-                  </li>
-                  <li>
-                    <button onClick={() => changeLanguage('kk')}>
-                      Қазақша
-                    </button>
-                  </li>
-                  <li>
-                    <button onClick={() => changeLanguage('en')}>
-                      English
-                    </button>
-                  </li>
+                  <li><button onClick={() => changeLanguage('ru')}>Русский</button></li>
+                  <li><button onClick={() => changeLanguage('kk')}>Қазақша</button></li>
+                  <li><button onClick={() => changeLanguage('en')}>English</button></li>
                 </ul>
               )}
             </div>
@@ -92,19 +73,14 @@ const Header = () => {
             {isAuthenticated ? (
               <div className="user-nav">
                 <span className="user-name">
-                  {user.full_name} (
-                  {user.role === 'admission'
-                    ? t('header.roleAdmission')
-                    : t('header.roleAdmin')}
-                  )
+                  {user.full_name} ({user.role === 'admission' ? t('header.roleAdmission') : t('header.roleAdmin')})
                 </span>
                 <button onClick={handleLogout} className="btn btn-secondary">
                   {t('header.logoutButton')}
                 </button>
               </div>
             ) : (
-              <div className="auth-nav">
-              </div>
+              <div className="auth-nav"></div>
             )}
           </nav>
         </div>

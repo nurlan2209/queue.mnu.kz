@@ -43,7 +43,7 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
-    mem_limit: 768
+    mem_limit: 768MB
     networks:
       - app-network
 

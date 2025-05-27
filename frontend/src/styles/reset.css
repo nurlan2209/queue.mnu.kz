@@ -1,18 +1,3 @@
-/* Базовый сброс стилей и общие переменные */
-:root {
-  --primary-color: #bf0603;
-  --secondary-color: #001427;
-  --accent-color: #f54241;
-  --background-color: #f9ecec;
-  --text-color: #1a1a1a;
-  --light-text: #5e6d7a;
-  --success-color: #4a8c5e;
-  --warning-color: #f4a261;
-  --danger-color: #bf0603;
-  --border-color: #d6dade;
-  --shadow-color: rgba(0, 20, 39, 0.1);
-}
-
 * {
   margin: 0;
   padding: 0;
