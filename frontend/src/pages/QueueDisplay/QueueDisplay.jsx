@@ -73,9 +73,7 @@ const QueueDisplay = () => {
     if (iframeRef.current) {
       try {
         const iframe = iframeRef.current;
-        const volume = shouldMute ? 10 : 100; // 10% или 100%
-
-        // Попытка отправить команду YouTube API
+        const volume = shouldMute ? 10 : 100;
         iframe.contentWindow?.postMessage(
           `{"event":"command","func":"setVolume","args":[${volume}]}`,
           'https://www.youtube.com'
@@ -90,15 +88,7 @@ const QueueDisplay = () => {
     // Метод 2: Прямое управление через DOM
     try {
       const allVideos = document.querySelectorAll('video');
-      allVideos.forEach(video => {
-        if (shouldMute) {
-          video.volume = 0.15; // 15%
-          console.log('🔇 Установлена громкость video элемента: 15%');
-        } else {
-          video.volume = 1.0; // 100%
-          console.log('🔊 Восстановлена громкость video элемента: 100%');
-        }
-      });
+      allVideos.forEach(video => video.volume = shouldMute ? 0.15 : 1.0);
     } catch (error) {
       console.error('❌ Ошибка прямого управления video элементами:', error);
     }
@@ -106,9 +96,7 @@ const QueueDisplay = () => {
     // Метод 3: Управление через Web Audio API
     if (gainNodeRef.current) {
       try {
-        const volume = shouldMute ? 0.15 : 1.0;
-        gainNodeRef.current.gain.value = volume;
-        console.log(`🎛️ Web Audio API громкость: ${volume * 100}%`);
+        gainNodeRef.current.gain.value = shouldMute ? 0.15 : 1.0;
       } catch (error) {
         console.error('❌ Ошибка Web Audio API:', error);
       }
@@ -122,11 +110,7 @@ const QueueDisplay = () => {
     const handleStorageChange = (e) => {
       if (e.key === 'announcementStatus') {
         const status = JSON.parse(e.newValue || '{}');
-
-        // Игнорируем быстрые дублирующиеся события
-        if (status.timestamp && Math.abs(status.timestamp - lastTimestamp) < 100) {
-          return;
-        }
+        if (status.timestamp && Math.abs(status.timestamp - lastTimestamp) < 100) return;
         lastTimestamp = status.timestamp;
 
         console.log('📢 Статус объявления:', status.isPlaying ? 'НАЧАЛОСЬ' : 'ЗАКОНЧИЛОСЬ');
@@ -154,9 +138,7 @@ const QueueDisplay = () => {
       }
     }
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Обновляем данные каждые 5 секунд
@@ -175,31 +157,23 @@ const QueueDisplay = () => {
 
   const getCardColorClass = (status) => {
     switch (status) {
-      case 'available':
-        return 'card-blue';
-      case 'paused':
-        return 'card-green';
-      case 'busy':
-        return 'card-purple';
-      default:
-        return 'card-blue';
+      case 'available': return 'card-blue';
+      case 'paused': return 'card-green';
+      case 'busy': return 'card-purple';
+      default: return 'card-blue';
     }
   };
 
   const getCardTextColorClass = (status) => {
     switch (status) {
-      case 'available':
-        return 'text-blue';
-      case 'paused':
-        return 'text-green';
-      case 'busy':
-        return 'text-purple';
-      default:
-        return 'text-blue';
+      case 'available': return 'text-blue';
+      case 'paused': return 'text-green';
+      case 'busy': return 'text-purple';
+      default: return 'text-blue';
     }
   };
 
-  const videoId = videoSettings.youtube_url ? extractYouTubeId(videoSettings.youtube_url) : null;
+  const videoId = extractYouTubeId(videoSettings.youtube_url);
 
   return (
     <div className="queue-display">
@@ -214,24 +188,23 @@ const QueueDisplay = () => {
 
       <div className="queue-entries">
         {queueEntries.map((entry) => (
-          <div
-            key={entry.id}
-            className={`queue-card ${getCardColorClass(entry.employee_status)}`}
-          >
+          <div key={entry.id} className={`queue-card ${getCardColorClass(entry.employee_status)}`}>
             <div className="queue-card-header">
               <div className={`queue-label ${getCardTextColorClass(entry.employee_status)}`}>№ ТАЛОНА</div>
               <div className={`desk-label ${getCardTextColorClass(entry.employee_status)}`}>№ КОНСУЛЬТАНТА</div>
             </div>
             <div className="queue-card-values">
               <div className={`queue-number ${getCardTextColorClass(entry.employee_status)}`}>{entry.queue_number}</div>
-              <div className={`desk-number ${getCardTextColorClass(entry.employee_status)}`}>{entry.employee_desk}</div>
+              <div style={{ width: '1px', background: 'currentColor', height: '40px', margin: '0 16px' }}></div>
+              <div className="desk-info">
+                <div className={`desk-number ${getCardTextColorClass(entry.employee_status)}`}>{entry.employee_desk}</div>
+                <div className={`consultant-name ${getCardTextColorClass(entry.employee_status)}`} style={{ textTransform: 'uppercase' }}>{entry.assigned_employee_name}</div>
+              </div>
             </div>
-            <div className={`consultant-name ${getCardTextColorClass(entry.employee_status)}`}>{entry.assigned_employee_name}</div>
           </div>
         ))}
       </div>
 
-      {/* Фиксированное время слева внизу */}
       <div className="fixed-time">
         {currentTime.toLocaleTimeString('ru-RU', {
           hour: '2-digit',
@@ -239,7 +212,6 @@ const QueueDisplay = () => {
         })}
       </div>
 
-      {/* Блок с видео внизу экрана */}
       {videoSettings.is_enabled && videoId && (
         <div className="video-section" style={{ alignSelf: 'flex-end', marginTop: 'auto' }}>
           <div className="video-container">
