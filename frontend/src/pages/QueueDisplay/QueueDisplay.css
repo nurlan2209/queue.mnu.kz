@@ -6,22 +6,16 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
+  position: relative;
 }
 
-/* Header */
 .display-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-  border-bottom: 4px solid #0A1F44;
+  margin-bottom: 12px; 
   padding-bottom: 15px;
 }
 
 .header-texts {
-  flex: 1;
-  min-width: 280px;
+  max-width: 100%;
 }
 
 .main-title {
@@ -30,18 +24,20 @@
   margin: 0;
   color: #0A1F44;
   text-transform: uppercase;
+  line-height: 1.1;
 }
 
 .sub-title {
   font-size: 2rem;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem; 
   font-weight: 500;
   color: #0A1F44;
   text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .wait-message {
-  background-color: #0A1F44;
+  background-color: #001965; 
   color: white;
   padding: 10px 20px;
   font-size: 1rem;
@@ -50,28 +46,15 @@
   border-radius: 4px;
 }
 
-.header-meta {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  margin-top: 10px;
-}
-
-.mnu-logo {
+.fixed-logo {
+  position: fixed;
+  top: 20px;
+  right: 20px;
   height: 60px;
   object-fit: contain;
+  z-index: 9999;
 }
 
-.display-time-box {
-  background-color: #0A1F44;
-  color: white;
-  font-size: 1.5rem;
-  padding: 10px 16px;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-/* Cards */
 .queue-entries {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
@@ -87,19 +70,31 @@
   justify-content: space-between;
   height: 180px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-  color: white;
+  color: black; 
 }
 
 .card-blue {
-  background-color: #001965;
+  background-color: #CDE7FE;
 }
 
 .card-green {
-  background-color: #247E20;
+  background-color: #DAFECD;
 }
 
 .card-purple {
-  background-color: #612196;
+  background-color: #F4CDFE;
+}
+
+.text-blue {
+  color: #001965;
+}
+
+.text-green {
+  color: #247E20;
+}
+
+.text-purple {
+  color: #612196;
 }
 
 .queue-card-header {
@@ -114,7 +109,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 2.2rem;
   font-weight: bold;
   margin-bottom: 10px;
 }
@@ -124,13 +118,17 @@
 .queue-label,
 .desk-label,
 .consultant-name {
-  color: white;
+  color: inherit;
 }
 
 .queue-number {
   font-size: 3rem;
   font-weight: 800;
-  color: inherit;
+}
+
+.desk-number {
+  font-size: 3rem; 
+  font-weight: 800;
 }
 
 .consultant-name {
@@ -138,7 +136,19 @@
   font-weight: 600;
 }
 
-/* Video */
+.fixed-time {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background-color: #001965;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 1.8rem;
+  z-index: 9999;
+}
+
 .video-section {
   margin-top: 30px;
   align-self: flex-end;
@@ -161,7 +171,6 @@
   border: none;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .main-title {
     font-size: 2rem;
@@ -175,11 +184,19 @@
     font-size: 0.95rem;
   }
 
-  .display-time-box {
-    font-size: 1.2rem;
+  .fixed-time {
+    font-size: 1.5rem;
+    padding: 6px 10px;
+    bottom: 10px;
+    left: 10px;
   }
 
   .queue-card-values {
+    font-size: 2rem;
+  }
+
+  .queue-number,
+  .desk-number {
     font-size: 2rem;
   }
 

@@ -186,6 +186,19 @@ const QueueDisplay = () => {
     }
   };
 
+  const getCardTextColorClass = (status) => {
+    switch (status) {
+      case 'available':
+        return 'text-blue';
+      case 'paused':
+        return 'text-green';
+      case 'busy':
+        return 'text-purple';
+      default:
+        return 'text-blue';
+    }
+  };
+
   const videoId = videoSettings.youtube_url ? extractYouTubeId(videoSettings.youtube_url) : null;
 
   return (
@@ -196,15 +209,7 @@ const QueueDisplay = () => {
           <h2 className="sub-title">ПРИЕМНОЙ КОМИССИИ MNU</h2>
           <div className="wait-message">Пожалуйста, ожидайте вызова вашего талона.</div>
         </div>
-        <div className="header-meta">
-          <img src="/logo_blue.svg" alt="MNU Logo" className="mnu-logo" />
-          <div className="display-time-box">
-            {currentTime.toLocaleTimeString('ru-RU', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </div>
-        </div>
+        <img src="/logo_blue.svg" alt="MNU Logo" className="fixed-logo" />
       </header>
 
       <div className="queue-entries">
@@ -214,16 +219,24 @@ const QueueDisplay = () => {
             className={`queue-card ${getCardColorClass(entry.employee_status)}`}
           >
             <div className="queue-card-header">
-              <div className="queue-label">№ ТАЛОНА</div>
-              <div className="desk-label">№ КОНСУЛЬТАНТА</div>
+              <div className={`queue-label ${getCardTextColorClass(entry.employee_status)}`}>№ ТАЛОНА</div>
+              <div className={`desk-label ${getCardTextColorClass(entry.employee_status)}`}>№ КОНСУЛЬТАНТА</div>
             </div>
             <div className="queue-card-values">
-              <div className="queue-number">{entry.queue_number}</div>
-              <div className="desk-number">{entry.employee_desk}</div>
+              <div className={`queue-number ${getCardTextColorClass(entry.employee_status)}`}>{entry.queue_number}</div>
+              <div className={`desk-number ${getCardTextColorClass(entry.employee_status)}`}>{entry.employee_desk}</div>
             </div>
-            <div className="consultant-name">{entry.assigned_employee_name}</div>
+            <div className={`consultant-name ${getCardTextColorClass(entry.employee_status)}`}>{entry.assigned_employee_name}</div>
           </div>
         ))}
+      </div>
+
+      {/* Фиксированное время слева внизу */}
+      <div className="fixed-time">
+        {currentTime.toLocaleTimeString('ru-RU', {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
       </div>
 
       {/* Блок с видео внизу экрана */}
