@@ -108,10 +108,29 @@ const EmployeeStatusControl = () => {
           
           // СОЗДАЕМ УНИКАЛЬНЫЙ ID для этого аудио
           audioIdRef.current = Date.now().toString();
-          setAudioData({
+          const audioInfo = {
             ...response.data.speech,
-            audioId: audioIdRef.current // Добавляем уникальный ID
-          });
+            audioId: audioIdRef.current
+          };
+          
+          setAudioData(audioInfo);
+
+          // **НОВОЕ**: Сохраняем аудио данные в localStorage для других страниц
+          try {
+            localStorage.setItem('currentAnnouncement', JSON.stringify({
+              audioBase64: response.data.speech.audio_base64,
+              text: response.data.speech.text,
+              language: response.data.speech.language,
+              timestamp: Date.now(),
+              audioId: audioIdRef.current,
+              queueNumber: response.data.queue_number,
+              employeeName: response.data.assigned_employee_name,
+              desk: response.data.employee_desk
+            }));
+            console.log('💾 Аудио данные сохранены в localStorage для других страниц');
+          } catch (e) {
+            console.error('❌ Ошибка сохранения аудио в localStorage:', e);
+          }
         } else {
           console.log('❌ НЕТ АУДИО ДАННЫХ ИЛИ ОШИБКА:', response.data.speech);
         }
@@ -135,6 +154,10 @@ const EmployeeStatusControl = () => {
       setCalledApplicant(null);
       setAudioData(null);
       audioIdRef.current = null;
+      
+      // **НОВОЕ**: Очищаем аудио данные из localStorage
+      localStorage.removeItem('currentAnnouncement');
+      
       setError(null);
     } catch (error) {
       setError(t('employeeStatus.errorCompleting'));
@@ -151,6 +174,10 @@ const EmployeeStatusControl = () => {
       setCalledApplicant(null);
       setAudioData(null);
       audioIdRef.current = null;
+      
+      // **НОВОЕ**: Очищаем аудио данные из localStorage
+      localStorage.removeItem('currentAnnouncement');
+      
       setError(null);
     } catch (error) {
       setError(t('employeeStatus.errorCompleting'));
@@ -163,6 +190,11 @@ const EmployeeStatusControl = () => {
   const handleAudioEnded = () => {
     setAudioData(null);
     audioIdRef.current = null;
+    
+    // **НОВОЕ**: Очищаем аудио данные из localStorage после воспроизведения
+    setTimeout(() => {
+      localStorage.removeItem('currentAnnouncement');
+    }, 1000);
   };
 
   if (loading) {

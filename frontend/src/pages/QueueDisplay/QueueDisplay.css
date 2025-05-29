@@ -128,16 +128,27 @@
   font-weight: 800;
 }
 
+.desk-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
 .desk-number {
   font-size: 3rem;
   font-weight: 800;
-  margin-right: 12px;
+  line-height: 1;
+  min-width: 60px;
+  flex-shrink: 0;
 }
 
 .consultant-name {
   font-size: 1.2rem;
   font-weight: 700;
   text-transform: uppercase;
+  line-height: 1;
+  margin-left: 8px;
 }
 
 .divider {
@@ -145,6 +156,7 @@
   height: 40px;
   background: currentColor;
   margin: 0 16px;
+  display: block; 
 }
 
 .fixed-time {
@@ -209,6 +221,10 @@
   .queue-number,
   .desk-number {
     font-size: 2rem;
+  }
+
+  .consultant-name {
+    font-size: 0.9rem;
   }
 
   .video-section {

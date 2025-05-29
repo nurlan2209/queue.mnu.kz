@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { queueAPI, publicAPI } from '../../api';
 import { useTranslation } from 'react-i18next';
+import AudioPlayer from '../../components/AudioPlayer/AudioPlayer';
 import './QueueDisplay.css';
 
 const QueueDisplay = () => {
@@ -14,11 +15,13 @@ const QueueDisplay = () => {
     is_enabled: false
   });
   const [isAnnouncementPlaying, setIsAnnouncementPlaying] = useState(false);
+  const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
 
   // Ссылки на элементы
   const iframeRef = useRef(null);
   const audioContextRef = useRef(null);
   const gainNodeRef = useRef(null);
+  const processedAnnouncementsRef = useRef(new Set());
 
   // Функция для извлечения YouTube ID из URL
   const extractYouTubeId = (url) => {
@@ -103,6 +106,45 @@ const QueueDisplay = () => {
     }
   };
 
+  // **НОВАЯ ФУНКЦИЯ**: Проверка новых объявлений в localStorage
+  const checkForNewAnnouncements = () => {
+    try {
+      const storedAnnouncement = localStorage.getItem('currentAnnouncement');
+      if (storedAnnouncement) {
+        const announcement = JSON.parse(storedAnnouncement);
+        
+        // Проверяем, не обрабатывали ли мы уже это объявление
+        if (!processedAnnouncementsRef.current.has(announcement.audioId)) {
+          console.log('🔊 QueueDisplay: Найдено новое объявление:', announcement);
+          
+          // Добавляем в список обработанных
+          processedAnnouncementsRef.current.add(announcement.audioId);
+          
+          // Воспроизводим аудио
+          setCurrentAnnouncement(announcement);
+          setIsAnnouncementPlaying(true);
+          controlVideoVolume(true);
+          
+          // Очищаем старые обработанные объявления (оставляем только последние 10)
+          if (processedAnnouncementsRef.current.size > 10) {
+            const array = Array.from(processedAnnouncementsRef.current);
+            processedAnnouncementsRef.current = new Set(array.slice(-10));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Ошибка проверки объявлений:', error);
+    }
+  };
+
+  // **НОВАЯ ФУНКЦИЯ**: Обработчик окончания воспроизведения аудио
+  const handleAnnouncementEnded = () => {
+    console.log('🏁 QueueDisplay: Объявление закончилось');
+    setCurrentAnnouncement(null);
+    setIsAnnouncementPlaying(false);
+    controlVideoVolume(false);
+  };
+
   // Слушаем изменения в localStorage
   useEffect(() => {
     let lastTimestamp = 0;
@@ -117,6 +159,11 @@ const QueueDisplay = () => {
 
         setIsAnnouncementPlaying(status.isPlaying);
         controlVideoVolume(status.isPlaying);
+      }
+      
+      // **НОВОЕ**: Слушаем изменения объявлений
+      if (e.key === 'currentAnnouncement') {
+        checkForNewAnnouncements();
       }
     };
 
@@ -138,6 +185,9 @@ const QueueDisplay = () => {
       }
     }
 
+    // **НОВОЕ**: Проверяем наличие объявлений при загрузке
+    checkForNewAnnouncements();
+
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
@@ -150,6 +200,9 @@ const QueueDisplay = () => {
       fetchQueueData();
       fetchVideoSettings();
       setCurrentTime(new Date());
+      
+      // **НОВОЕ**: Периодически проверяем новые объявления
+      checkForNewAnnouncements();
     }, 5000);
 
     return () => clearInterval(interval);
@@ -195,7 +248,7 @@ const QueueDisplay = () => {
             </div>
             <div className="queue-card-values">
               <div className={`queue-number ${getCardTextColorClass(entry.employee_status)}`}>{entry.queue_number}</div>
-              <div style={{ width: '1px', background: 'currentColor', height: '40px', margin: '0 16px' }}></div>
+              <div className="divider"></div>
               <div className="desk-info">
                 <div className={`desk-number ${getCardTextColorClass(entry.employee_status)}`}>{entry.employee_desk}</div>
                 <div className={`consultant-name ${getCardTextColorClass(entry.employee_status)}`} style={{ textTransform: 'uppercase' }}>{entry.assigned_employee_name}</div>
@@ -225,6 +278,16 @@ const QueueDisplay = () => {
             ></iframe>
           </div>
         </div>
+      )}
+
+      {/* **НОВОЕ**: Аудиоплеер для воспроизведения объявлений на display странице */}
+      {currentAnnouncement && currentAnnouncement.audioBase64 && (
+        <AudioPlayer
+          key={currentAnnouncement.audioId}
+          audioBase64={currentAnnouncement.audioBase64}
+          onEnded={handleAnnouncementEnded}
+          autoPlay={true}
+        />
       )}
     </div>
   );
