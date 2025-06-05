@@ -70,6 +70,7 @@
   flex-direction: column;
   justify-content: space-between;
   height: 180px;
+  width: 325px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
   color: black;
 }
@@ -132,7 +133,6 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 16px;
 }
 
 .desk-number {

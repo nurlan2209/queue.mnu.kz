@@ -1,75 +1,197 @@
+/* Основной стиль */
 .queue-ticket {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
+  font-family: 'Inter', sans-serif;
+  max-width: 420px;
   margin: 0 auto;
-  overflow: hidden;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-.ticket-header {
-  background-color: var(--danger-color);
-  color: white;
-  padding: 15px 20px;
+/* Верхний блок */
+.ticket-highlight {
+  background-color: #CDE7FE;
+  padding: 24px;
+  border-radius: 16px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 20px;
+}
+
+.ticket-column {
+  display: flex;
+  flex-direction: column;
   align-items: center;
 }
 
-.ticket-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
+.label-inline {
+  font-size: 14px;
+  font-weight: 600;
+  color: #002f6c;
+  white-space: nowrap;
 }
 
-.ticket-number {
-  font-size: 1.5rem;
-  font-weight: bold;
+.number {
+  font-size: 40px;
+  font-weight: 700;
+  color: #002f6c;
+  line-height: 1.1;
+  margin-top: 4px;
 }
 
-.ticket-body {
-  padding: 20px;
+.ticket-divider {
+  width: 1px;
+  height: 64px;
+  background-color: #002f6c;
 }
 
+.consultant-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.consultant-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #002f6c;
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Очередь */
+.queue-position {
+  text-align: center;
+  font-weight: 600;
+  color: #002f6c;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+/* Информационные карточки */
 .ticket-info {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 15px;
+  color: #4b4b4b;
+  gap: 10px;
+}
+
+.info-card i {
+  color: #7d7dff;
+  font-size: 16px;
+}
+
+/* Кнопки */
+.button-group {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.info-row {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
+.button-back,
+.button-close {
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.info-label {
-  font-weight: bold;
-  color: #555;
+.button-back {
+  background-color: #bdbdbd;
+  color: #fff;
 }
 
-.info-value {
-  color: #333;
+.button-close {
+  background-color: #002f6c;
+  color: #fff;
 }
 
-.ticket-actions {
-  display: flex;
-  gap: 10px;
-  padding: 15px 20px;
-  background-color: #f5f5f5;
-  justify-content: space-between;
+.button-close:hover {
+  background-color: #001f4d;
 }
 
-@media print {
-  .ticket-actions {
-    display: none;
-  }
-  
-  body {
-    background: none;
-  }
-  
+@media screen and (max-width: 768px) {
   .queue-ticket {
-    box-shadow: none;
-    border: 1px solid #ccc;
+    padding: 16px;
+  }
+
+  .ticket-highlight {
+    flex-direction: row;
+    gap: 24px;
+    padding: 16px;
+  }
+
+  .number {
+    font-size: 32px;
+  }
+
+  .ticket-divider {
+    height: 48px;
+  }
+
+  .label-inline {
+    font-size: 13px;
+  }
+
+  .consultant-name {
+    font-size: 13px;
+  }
+
+  .queue-position {
+    font-size: 16px;
+  }
+
+  .info-card {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .info-card i {
+    font-size: 14px;
+  }
+
+  .button-back,
+  .button-close {
+    font-size: 15px;
+    padding: 12px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .ticket-highlight {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ticket-divider {
+    width: 60%;
+    height: 1px;
+  }
+
+  .number {
+    font-size: 28px;
+  }
+
+  .queue-position {
+    font-size: 15px;
   }
 }

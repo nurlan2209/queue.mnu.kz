@@ -5,7 +5,7 @@ import './QueueTicket.css';
 
 const QueueTicket = ({ ticket, onReturn }) => {
   const { t } = useTranslation();
-  
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('ru-RU', {
@@ -13,7 +13,7 @@ const QueueTicket = ({ ticket, onReturn }) => {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   };
 
@@ -51,72 +51,68 @@ const QueueTicket = ({ ticket, onReturn }) => {
 
   return (
     <div className="queue-ticket">
-      <div className="ticket-header">
-        <h2>{t('queueTicket.title')}</h2>
-        <div className="ticket-number">№ {ticket.queue_number}</div>
-      </div>
-      
-      <div className="ticket-body">
-        <div className="ticket-info">
-          <div className="info-row">
-            <span className="info-label">{t('queueTicket.fullName')}:</span>
-            <span className="info-value">{ticket.full_name}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="info-label">{t('queueTicket.phone')}:</span>
-            <span className="info-value">{ticket.phone}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="info-label">{t('queueTicket.programs')}:</span>
-            <span className="info-value">
-              {Array.isArray(ticket.programs) ? (
-                ticket.programs.map((program, index) => (
-                  <React.Fragment key={program}>
-                    <ProgramTranslator programCode={program} formLanguage={ticket.form_language} />
-                    {index < ticket.programs.length - 1 && ', '}
-                  </React.Fragment>
-                ))
-              ) : (
-                // Если programs не массив, пробуем обработать как строку
-                typeof ticket.programs === 'string' ? 
-                  <ProgramTranslator programCode={ticket.programs} formLanguage={ticket.form_language} /> :
-                  ticket.programs || '-'
-              )}
-            </span>
-          </div>
-          
-          <div className="info-row">
-            <span className="info-label">{t('queueTicket.queue')}:</span>
-            <span className="info-value">{ticket.position || 0}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="info-label">{t('queueTicket.peopleAhead')}:</span>
-            <span className="info-value">{ticket.people_ahead || 0}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="info-label">{t('queueTicket.createdAt')}:</span>
-            <span className="info-value">{formatDate(ticket.created_at)}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="info-label">{t('queueTicket.employee')}:</span>
-            <span className="info-value">{ticket.assigned_employee_name}</span>
+      {/* Верхний блок с номером талона и консультанта */}
+      <div className="ticket-highlight">
+        <div className="ticket-column">
+          <div className="label-inline">№ {t('queueTicket.title').toUpperCase()}</div>
+          <div className="number">{ticket.queue_number}</div>
+        </div>
+
+        <div className="ticket-divider"></div>
+
+        <div className="ticket-column">
+          <div className="label-inline">КОНСУЛЬТАНТ</div>
+          <div className="consultant-info">
+            <div className="consultant-name">{ticket.assigned_employee_name}</div>
           </div>
         </div>
       </div>
-      
-      <div className="ticket-actions">
-        <button className="btn btn-primary" onClick={onReturn}>
+
+      {/* Людей впереди */}
+      <div className="queue-position">
+        {t('queueTicket.peopleAhead')}: {ticket.people_ahead || 0}
+      </div>
+
+      {/* Информация */}
+      <div className="ticket-info">
+        <div className="info-card">
+          <i className="fa-solid fa-user"></i> {ticket.full_name}
+        </div>
+        <div className="info-card">
+          <i className="fa-solid fa-phone"></i> {ticket.phone}
+        </div>
+        <div className="info-card">
+          <i className="fa-solid fa-graduation-cap"></i>{' '}
+          {Array.isArray(ticket.programs) ? (
+            ticket.programs.map((program, index) => (
+              <React.Fragment key={program}>
+                <ProgramTranslator programCode={program} formLanguage={ticket.form_language} />
+                {index < ticket.programs.length - 1 && ', '}
+              </React.Fragment>
+            ))
+          ) : typeof ticket.programs === 'string' ? (
+            <ProgramTranslator programCode={ticket.programs} formLanguage={ticket.form_language} />
+          ) : (
+            ticket.programs || '-'
+          )}
+        </div>
+        <div className="info-card">
+          <i className="fa-regular fa-clock"></i> {formatDate(ticket.created_at)}
+        </div>
+      </div>
+
+      {/* Кнопки */}
+      <div className="button-group">
+        <button className="button-back" onClick={onReturn}>
           {t('queueTicket.backButton')}
         </button>
-        <button className="btn btn-danger" onClick={() => {
-          localStorage.removeItem('queueTicket');
-          onReturn();
-        }}>
+        <button
+          className="button-close"
+          onClick={() => {
+            localStorage.removeItem('queueTicket');
+            onReturn();
+          }}
+        >
           {t('queueTicket.closeTicket')}
         </button>
       </div>
