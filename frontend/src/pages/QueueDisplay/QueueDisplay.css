@@ -10,7 +10,7 @@
 }
 
 .display-header {
-  margin-bottom: 0px;
+  margin-bottom: 0;
   padding-bottom: 0;
 }
 
@@ -44,7 +44,6 @@
   margin-top: 15px;
   display: inline-block;
   border-radius: 4px;
-  border-bottom: none;
 }
 
 .fixed-logo {
@@ -70,9 +69,9 @@
   flex-direction: column;
   justify-content: space-between;
   height: 180px;
-  width: 325px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-  color: black;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  color: black; 
+  width: 350px;
 }
 
 .card-blue {
@@ -103,60 +102,52 @@
   display: flex;
   justify-content: space-between;
   font-weight: bold;
-  font-size: 0.9rem;
-  margin-bottom: 8px;
-  border-bottom: 1px solid white;
-  padding-bottom: 0.25rem;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
 }
 
 .queue-card-values {
   display: flex;
   align-items: center;
   font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.queue-number,
-.desk-number,
-.queue-label,
-.desk-label,
-.consultant-name {
-  color: inherit;
+  margin-top: auto;
 }
 
 .queue-number {
-  font-size: 3rem;
+  font-size: 3.2rem;
   font-weight: 800;
+  line-height: 1;
 }
 
 .desk-info {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  justify-content: center;
+  align-items: center; 
+  gap: 10px; 
 }
 
 .desk-number {
-  font-size: 3rem;
+  font-size: 3.2rem;
   font-weight: 800;
   line-height: 1;
-  min-width: 60px;
-  flex-shrink: 0;
 }
 
 .consultant-name {
-  font-size: 1.2rem;
+  font-size: 1.03rem;
   font-weight: 700;
   text-transform: uppercase;
-  line-height: 1;
-  margin-left: 8px;
+  margin-top: 4px;
+  line-height: 1.1;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .divider {
-  width: 1px;
-  height: 40px;
+  width: 1.5px;
+  height: 70px;
   background: currentColor;
   margin: 0 16px;
-  display: block; 
 }
 
 .fixed-time {
@@ -168,7 +159,7 @@
   padding: 10px 16px;
   border-radius: 4px;
   font-weight: bold;
-  font-size: 1.8rem;
+  font-size: 1.9rem;
   z-index: 9999;
 }
 
@@ -181,7 +172,7 @@
 
 .video-container {
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16 / 9;
   background-color: black;
   border-radius: 8px;
   overflow: hidden;
@@ -214,17 +205,13 @@
     left: 10px;
   }
 
-  .queue-card-values {
-    font-size: 2rem;
-  }
-
   .queue-number,
   .desk-number {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
 
-  .consultant-name {
-    font-size: 0.9rem;
+  .divider {
+    height: 50px;
   }
 
   .video-section {

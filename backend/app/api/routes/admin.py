@@ -13,6 +13,8 @@ from app.schemas import AdminUserCreate, UserResponse, UserUpdate
 from app.security import get_admin_user
 from app.services.user import create_user
 from app.services.queue import get_all_queue_entries
+from app.services.archive import get_archive_statistics, cleanup_old_completed_entries
+from app.models.archive import ArchivedQueueEntry
 from fastapi.responses import StreamingResponse
 import io
 import csv
@@ -206,6 +208,51 @@ def export_queue_to_excel(
         headers=headers, 
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+@router.post("/queue/reset-numbering")
+def reset_queue_numbering(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Сбросить нумерацию очереди (только для админов)"""
+    try:
+        # Получаем все активные заявки (не completed)
+        active_entries = db.query(QueueEntry).filter(
+            QueueEntry.status.in_([QueueStatus.WAITING, QueueStatus.IN_PROGRESS, QueueStatus.PAUSED])
+        ).order_by(QueueEntry.created_at).all()
+        
+        # Архивируем и удаляем все completed заявки
+        completed_entries = db.query(QueueEntry).filter(QueueEntry.status == QueueStatus.COMPLETED).all()
+        
+        archived_count = 0
+        for entry in completed_entries:
+            try:
+                archive_queue_entry(db, entry, reason="manual_reset")
+                db.delete(entry)
+                archived_count += 1
+            except Exception as e:
+                continue
+        
+        # Перенумеровываем активные заявки начиная с 1
+        renumbered_count = 0
+        for i, entry in enumerate(active_entries, 1):
+            entry.queue_number = i
+            db.add(entry)
+            renumbered_count += 1
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"Queue numbering reset successfully",
+            "archived_completed": archived_count,
+            "renumbered_active": renumbered_count,
+            "next_number": len(active_entries) + 1
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Reset failed: {str(e)}")
 
 @router.post("/create-admission", response_model=UserResponse)
 def create_admission_staff(
