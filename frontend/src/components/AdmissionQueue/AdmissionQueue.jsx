@@ -75,14 +75,35 @@ const AdmissionQueue = () => {
     []
   );
 
+  // 🔄 АВТООБНОВЛЕНИЕ списка заявок каждые 10 секунд
   useEffect(() => {
     fetchQueue(activeFilter, searchTerm, searchField, sortBy);
-    return () => fetchQueue.cancel();
+    
+    // Устанавливаем интервал для автообновления каждые 10 секунд
+    const interval = setInterval(() => {
+      console.log('🔄 Автообновление списка заявок...');
+      fetchQueue(activeFilter, searchTerm, searchField, sortBy);
+    }, 10000);
+
+    // 📡 СЛУШАЕМ СОБЫТИЯ от других компонентов
+    const handleQueueUpdate = () => {
+      console.log('📡 Получено событие обновления очереди');
+      fetchQueue(activeFilter, searchTerm, searchField, sortBy);
+    };
+
+    window.addEventListener('queueUpdated', handleQueueUpdate);
+
+    return () => {
+      fetchQueue.cancel();
+      clearInterval(interval);
+      window.removeEventListener('queueUpdated', handleQueueUpdate);
+    };
   }, [activeFilter, searchTerm, searchField, sortBy, fetchQueue]);
 
   const handleProcessNext = async () => {
     try {
       await admissionAPI.processNext();
+      // 🔄 СРАЗУ ОБНОВЛЯЕМ список после действия
       fetchQueue(activeFilter, searchTerm, searchField, sortBy);
     } catch (err) {
       setError(t('admissionQueue.errorProcessing'));
@@ -92,6 +113,7 @@ const AdmissionQueue = () => {
   const handleUpdateStatus = async (queueId, status) => {
     try {
       await admissionAPI.updateEntry(queueId, { status });
+      // 🔄 СРАЗУ ОБНОВЛЯЕМ список после действия
       fetchQueue(activeFilter, searchTerm, searchField, sortBy);
     } catch (err) {
       setError(t('admissionQueue.errorUpdatingStatus'));
@@ -103,6 +125,7 @@ const AdmissionQueue = () => {
     try {
       setDeletingId(queueId);
       await admissionAPI.deleteEntry(queueId);
+      // 🔄 СРАЗУ ОБНОВЛЯЕМ список после действия
       fetchQueue(activeFilter, searchTerm, searchField, sortBy);
     } catch (err) {
       const errorMessage = err.response?.data?.detail
@@ -116,8 +139,24 @@ const AdmissionQueue = () => {
     }
   };
 
+  // 🆕 НОВАЯ ФУНКЦИЯ для ручного обновления
+  const handleRefresh = () => {
+    console.log('🔄 Ручное обновление списка заявок...');
+    fetchQueue(activeFilter, searchTerm, searchField, sortBy);
+  };
+
   const getStatusText = (status) => {
     return t(`admissionQueue.status.${status}`);
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      'waiting': '#ffc107',      // Желтый
+      'in_progress': '#007bff',  // Синий
+      'completed': '#28a745',    // Зеленый
+      'cancelled': '#dc3545'     // Красный
+    };
+    return colors[status] || '#6c757d';
   };
 
   // Обработчик смены языка
@@ -128,7 +167,22 @@ const AdmissionQueue = () => {
   return (
     <div className="admission-queue">
       <div className="queue-controls">
-        <h2>{t('admissionQueue.title')}</h2>
+        <div className="queue-header">
+          <h2>{t('admissionQueue.title')}</h2>
+          <div className="queue-actions">
+            <button 
+              className="btn btn-refresh"
+              onClick={handleRefresh}
+              disabled={loading}
+              title="Обновить список заявок"
+            >
+              🔄 {loading ? 'Обновляем...' : 'Обновить'}
+            </button>
+            <div className="auto-refresh-info">
+              📡 Автообновление каждые 10 сек
+            </div>
+          </div>
+        </div>
       </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
@@ -136,7 +190,12 @@ const AdmissionQueue = () => {
       {loading ? (
         <p className="loading-text">{t('admissionQueue.loading')}</p>
       ) : queue.length === 0 ? (
-        <p className="empty-queue">{t('admissionQueue.emptyQueue')}</p>
+        <div className="empty-queue">
+          <p>{t('admissionQueue.emptyQueue')}</p>
+          <button className="btn btn-primary" onClick={handleRefresh}>
+            🔄 Проверить снова
+          </button>
+        </div>
       ) : (
         <div className="queue-cards1">
           {queue.map((entry) => (
@@ -145,7 +204,10 @@ const AdmissionQueue = () => {
                 <span className="queue-number1">
                   {t('admissionQueue.queueNumber', { number: entry.queue_number })}
                 </span>
-                <span className={`status-badge status-${entry.status}`}>
+                <span 
+                  className={`status-badge status-${entry.status}`}
+                  style={{ backgroundColor: getStatusColor(entry.status) }}
+                >
                   {getStatusText(entry.status)}
                 </span>
               </div>
@@ -174,6 +236,14 @@ const AdmissionQueue = () => {
                   })}{' '}
                   {new Date(entry.created_at).toLocaleTimeString(i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
                 </p>
+                
+                {/* 🆕 ПОКАЗЫВАЕМ ВРЕМЯ ОБРАБОТКИ если заявка в процессе */}
+                {entry.status === 'in_progress' && entry.processing_time && (
+                  <p className="processing-time">
+                    <strong>⏱️ Время обработки:</strong>{' '}
+                    {Math.floor(entry.processing_time / 60)} мин {entry.processing_time % 60} сек
+                  </p>
+                )}
               </div>
               <div className="card-actions1">
                 <button

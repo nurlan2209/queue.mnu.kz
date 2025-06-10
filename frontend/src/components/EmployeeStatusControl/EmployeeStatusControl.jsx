@@ -46,6 +46,11 @@ const EmployeeStatusControl = () => {
       const response = await admissionAPI.startWork();
       setStatus(response.data);
       setError(null);
+      
+      // АВТОМАТИЧЕСКИ ВЫЗЫВАЕМ ПЕРВОГО АБИТУРИЕНТА при начале работы
+      setTimeout(() => {
+        handleCallNext();
+      }, 500);
     } catch (error) {
       setError(t('employeeStatus.errorStarting'));
     } finally {
@@ -72,6 +77,11 @@ const EmployeeStatusControl = () => {
       const response = await admissionAPI.resumeWork();
       setStatus(response.data);
       setError(null);
+      
+      // АВТОМАТИЧЕСКИ ВЫЗЫВАЕМ СЛЕДУЮЩЕГО при возобновлении работы
+      setTimeout(() => {
+        handleCallNext();
+      }, 500);
     } catch (error) {
       setError(t('employeeStatus.errorResuming'));
     } finally {
@@ -80,7 +90,7 @@ const EmployeeStatusControl = () => {
   };
 
   const handleCallNext = async () => {
-    console.log('🚀 Кнопка "Вызвать следующего" нажата');
+    console.log('🚀 Вызов следующего абитуриента');
     try {
       setActionLoading(true);
       const response = await admissionAPI.callNext();
@@ -98,6 +108,9 @@ const EmployeeStatusControl = () => {
         
         // СРАЗУ МЕНЯЕМ ЛОКАЛЬНЫЙ СТАТУС НА BUSY
         setStatus(prevStatus => ({ ...prevStatus, status: 'busy' }));
+        
+        // 📡 УВЕДОМЛЯЕМ ДРУГИЕ КОМПОНЕНТЫ об обновлении
+        window.dispatchEvent(new CustomEvent('queueUpdated'));
         
         console.log('🎤 РЕЧЕВЫЕ ДАННЫЕ:', response.data.speech);
         
@@ -135,9 +148,6 @@ const EmployeeStatusControl = () => {
           console.log('❌ НЕТ АУДИО ДАННЫХ ИЛИ ОШИБКА:', response.data.speech);
         }
       }
-      
-      // НЕ ОБНОВЛЯЕМ статус сразу - пусть интервал сам обновит через 30 сек
-      // await fetchEmployeeStatus();
     } catch (error) {
       console.error('💥 ОШИБКА В handleCallNext:', error);
       setError(t('employeeStatus.errorCallingNext'));
@@ -159,6 +169,23 @@ const EmployeeStatusControl = () => {
       localStorage.removeItem('currentAnnouncement');
       
       setError(null);
+      
+      // 🔄 ОБНОВЛЯЕМ СТРАНИЦУ СТАТУСА
+      await fetchEmployeeStatus();
+      
+      // 📡 УВЕДОМЛЯЕМ ДРУГИЕ КОМПОНЕНТЫ об обновлении
+      window.dispatchEvent(new CustomEvent('queueUpdated'));
+      
+      // 🚀 АВТОМАТИЧЕСКИ ВЫЗЫВАЕМ СЛЕДУЮЩЕГО АБИТУРИЕНТА 
+      // только если сотрудник НЕ на паузе
+      if (response.data.status === 'available') {
+        console.log('✅ Автоматически вызываем следующего абитуриента');
+        setTimeout(() => {
+          handleCallNext();
+        }, 1000); // Небольшая задержка для пользователя
+      } else {
+        console.log('⏸️ Сотрудник на паузе, автовызов отменен');
+      }
     } catch (error) {
       setError(t('employeeStatus.errorCompleting'));
     } finally {
@@ -232,7 +259,7 @@ const EmployeeStatusControl = () => {
 
       {calledApplicant && (
         <div className="called-applicant">
-          <h4>Вызванный абитуриент:</h4>
+          <h4>Текущий абитуриент:</h4>
           <div className="applicant-info">
             <p><strong>Номер:</strong> {calledApplicant.queue_number}</p>
             <p><strong>ФИО:</strong> {calledApplicant.full_name}</p>
@@ -252,18 +279,18 @@ const EmployeeStatusControl = () => {
             onClick={handleStartWork}
             disabled={actionLoading}
           >
-            {t('employeeStatus.startWork')}
+            {actionLoading ? 'Начинаем работу...' : t('employeeStatus.startWork')}
           </button>
         )}
 
-        {status.status === 'available' && (
+        {status.status === 'available' && !calledApplicant && (
           <>
             <button
-              className="btn btn-primary"
+              className="btn btn-info"
               onClick={handleCallNext}
               disabled={actionLoading}
             >
-              {t('employeeStatus.callNext')}
+              {actionLoading ? 'Вызываем...' : 'Вызвать следующего вручную'}
             </button>
             <button
               className="btn btn-warning"
@@ -282,25 +309,47 @@ const EmployeeStatusControl = () => {
           </>
         )}
 
-        {/* ПОКАЗЫВАЕМ КНОПКУ ЗАВЕРШИТЬ ЕСЛИ СТАТУС BUSY ИЛИ ЕСТЬ ВЫЗВАННЫЙ АБИТУРИЕНТ */}
+        {/* 🔥 НОВЫЙ БЛОК: Кнопки во время обработки абитуриента */}
         {(status.status === 'busy' || calledApplicant) && (
-          <button
-            className="btn btn-success"
-            onClick={handleCompleteApplicant}
-            disabled={actionLoading}
-          >
-            {t('employeeStatus.completeApplicant')}
-          </button>
+          <div className="current-applicant-actions">
+            <button
+              className="btn btn-success"
+              onClick={handleCompleteApplicant}
+              disabled={actionLoading}
+            >
+              {actionLoading ? 'Завершаем...' : 'Завершить с текущим'}
+            </button>
+            
+            {/* 🆕 КНОПКА ПАУЗЫ ВО ВРЕМЯ ОБРАБОТКИ */}
+            <button
+              className="btn btn-warning"
+              onClick={handlePauseWork}
+              disabled={actionLoading}
+              title="Уйти на перерыв после завершения с текущим абитуриентом"
+            >
+              {actionLoading ? 'Пауза...' : '⏸️ Пауза после завершения'}
+            </button>
+          </div>
         )}
 
         {status.status === 'paused' && (
-          <button
-            className="btn btn-primary"
-            onClick={handleResumeWork}
-            disabled={actionLoading}
-          >
-            {t('employeeStatus.resumeWork')}
-          </button>
+          <div className="paused-actions">
+            <p className="pause-info">🔔 На паузе. Автовызов отключен.</p>
+            <button
+              className="btn btn-primary"
+              onClick={handleResumeWork}
+              disabled={actionLoading}
+            >
+              {actionLoading ? 'Возобновляем...' : t('employeeStatus.resumeWork')}
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleFinishWork}
+              disabled={actionLoading}
+            >
+              {t('employeeStatus.finishWork')}
+            </button>
+          </div>
         )}
       </div>
 

@@ -3,8 +3,9 @@ from sqlalchemy import func
 from typing import Optional, List
 from uuid import uuid4
 import logging
+import random
 from app.models.queue import QueueEntry, QueueStatus
-from app.models.user import User
+from app.models.user import User, EmployeeStatus
 from app.schemas.queue import QueueCreate, QueueUpdate, QueueStatusResponse, PublicQueueCreate, QueueResponse
 from app.services.archive import enforce_queue_limit, cleanup_old_completed_entries
 from sqlalchemy import text
@@ -12,10 +13,76 @@ import json
 
 logger = logging.getLogger(__name__)
 
-def create_queue_entry(db: Session, queue: PublicQueueCreate) -> QueueResponse:
-    """Создать новую заявку с автоматической очисткой и архивированием"""
+def select_employee_automatically(db: Session) -> Optional[str]:
+    """
+    Автоматически выбирает сотрудника для новой заявки
+    
+    Алгоритм:
+    1. Находит всех доступных сотрудников (available, busy)
+    2. Считает количество активных заявок у каждого
+    3. Выбирает сотрудника с минимальным количеством заявок
+    4. При равенстве - случайный выбор
+    """
     try:
-        # СНАЧАЛА очищаем место если нужно (ДО создания новой заявки)
+        # Получаем всех доступных сотрудников (не offline, не paused)
+        available_employees = db.query(User).filter(
+            User.role == "admission",
+            User.status.in_([EmployeeStatus.AVAILABLE.value, EmployeeStatus.BUSY.value])
+        ).all()
+        
+        if not available_employees:
+            logger.warning("No available employees found for auto-assignment")
+            return None
+        
+        # Считаем количество активных заявок для каждого сотрудника
+        employee_workload = []
+        
+        for employee in available_employees:
+            # Считаем заявки со статусом WAITING и IN_PROGRESS
+            active_count = db.query(QueueEntry).filter(
+                QueueEntry.assigned_employee_name == employee.full_name,
+                QueueEntry.status.in_([QueueStatus.WAITING, QueueStatus.IN_PROGRESS])
+            ).count()
+            
+            employee_workload.append({
+                'employee': employee,
+                'count': active_count
+            })
+            
+            logger.info(f"Employee {employee.full_name}: {active_count} active entries")
+        
+        # Находим минимальное количество заявок
+        min_count = min(emp['count'] for emp in employee_workload)
+        
+        # Находим всех сотрудников с минимальным количеством заявок
+        employees_with_min_count = [
+            emp['employee'] for emp in employee_workload 
+            if emp['count'] == min_count
+        ]
+        
+        # Если несколько сотрудников с одинаковым минимумом - выбираем случайно
+        selected_employee = random.choice(employees_with_min_count)
+        
+        logger.info(f"Auto-selected employee: {selected_employee.full_name} (workload: {min_count} entries)")
+        
+        return selected_employee.full_name
+        
+    except Exception as e:
+        logger.error(f"Error in automatic employee selection: {e}")
+        return None
+
+def create_queue_entry(db: Session, queue: PublicQueueCreate) -> QueueResponse:
+    """Создать новую заявку с автоматическим распределением сотрудника"""
+    try:
+        # АВТОМАТИЧЕСКИ ВЫБИРАЕМ СОТРУДНИКА если не указан
+        if not queue.assigned_employee_name:
+            queue.assigned_employee_name = select_employee_automatically(db)
+            
+            if not queue.assigned_employee_name:
+                logger.error("No employees available for assignment")
+                raise Exception("В данный момент нет доступных сотрудников для обработки заявки")
+        
+        # Остальная логика остается прежней
         total_count = db.query(QueueEntry).count()
         
         if total_count >= 99:  # Если достигли лимита
@@ -52,7 +119,6 @@ def create_queue_entry(db: Session, queue: PublicQueueCreate) -> QueueResponse:
                 logger.info(f"Re-numbered {len(remaining_entries)} remaining entries")
             else:
                 logger.warning("Queue is full but no COMPLETED entries to clean!")
-                # Можно выбросить ошибку или принудительно удалить самые старые
                 raise Exception("Queue is full and no completed entries available for cleanup")
         
         # Получаем следующий номер для новой заявки
@@ -68,7 +134,7 @@ def create_queue_entry(db: Session, queue: PublicQueueCreate) -> QueueResponse:
             programs=queue.programs,
             status=QueueStatus.WAITING,
             notes=queue.notes,
-            assigned_employee_name=queue.assigned_employee_name,
+            assigned_employee_name=queue.assigned_employee_name,  # Теперь автоматически назначенный
             form_language=queue.form_language 
         )
         
@@ -99,7 +165,7 @@ def create_queue_entry(db: Session, queue: PublicQueueCreate) -> QueueResponse:
         db.commit()
         db.refresh(db_queue)
         
-        logger.info(f"Created new queue entry {db_queue.id} with number {queue_number} (saved to queue + archive)")
+        logger.info(f"Created new queue entry {db_queue.id} with number {queue_number} assigned to {queue.assigned_employee_name}")
         
         return db_queue
         
@@ -107,7 +173,7 @@ def create_queue_entry(db: Session, queue: PublicQueueCreate) -> QueueResponse:
         logger.error(f"Error creating queue entry: {e}")
         db.rollback()
         raise
-        
+
 def update_archive_status(db: Session, queue_entry: QueueEntry):
     """Обновить статус в архиве при изменении в основной таблице"""
     try:

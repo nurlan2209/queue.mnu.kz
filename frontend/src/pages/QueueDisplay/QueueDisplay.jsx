@@ -1,6 +1,9 @@
+// QueueDisplay.jsx - Обновленная версия с цветовой схемой программ
+
 import React, { useState, useEffect, useRef } from 'react';
 import { queueAPI, publicAPI } from '../../api';
 import { useTranslation } from 'react-i18next';
+import { getProgramCategoryFromArray, getProgramColors } from '../../utils/programColors';
 import AudioPlayer from '../../components/AudioPlayer/AudioPlayer';
 import './QueueDisplay.css';
 
@@ -208,6 +211,51 @@ const QueueDisplay = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // НОВЫЕ ФУНКЦИИ: Получение цветовых классов на основе программ заявки
+  const getCardColorClassByPrograms = (entry) => {
+    // Если есть информация о программах в entry
+    if (entry.programs && entry.programs.length > 0) {
+      const programCategory = getProgramCategoryFromArray(entry.programs);
+      const programColors = getProgramColors(entry.programs);
+      
+      // Возвращаем стили на основе программы, а не статуса сотрудника
+      switch (programCategory) {
+        case 'bachelor':
+          return 'card-blue'; // Синий для бакалавриата
+        case 'master':
+          return 'card-green'; // Зеленый для магистратуры
+        case 'doctorate':
+          return 'card-purple'; // Фиолетовый для докторантуры
+        default:
+          return 'card-blue'; // По умолчанию синий
+      }
+    }
+    
+    // Fallback к старой логике, если нет информации о программах
+    return getCardColorClass(entry.employee_status);
+  };
+
+  const getCardTextColorClassByPrograms = (entry) => {
+    if (entry.programs && entry.programs.length > 0) {
+      const programCategory = getProgramCategoryFromArray(entry.programs);
+      
+      switch (programCategory) {
+        case 'bachelor':
+          return 'text-blue';
+        case 'master':
+          return 'text-green';
+        case 'doctorate':
+          return 'text-purple';
+        default:
+          return 'text-blue';
+      }
+    }
+    
+    // Fallback к старой логике
+    return getCardTextColorClass(entry.employee_status);
+  };
+
+  // Старые функции (оставляем для совместимости)
   const getCardColorClass = (status) => {
     switch (status) {
       case 'available': return 'card-blue';
@@ -240,22 +288,30 @@ const QueueDisplay = () => {
       </header>
 
       <div className="queue-entries">
-        {queueEntries.map((entry) => (
-          <div key={entry.id} className={`queue-card ${getCardColorClass(entry.employee_status)}`}>
-            <div className="queue-card-header">
-              <div className={`queue-label ${getCardTextColorClass(entry.employee_status)}`}>№ ТАЛОНА</div>
-              <div className={`desk-label ${getCardTextColorClass(entry.employee_status)}`}>№ КОНСУЛЬТАНТА</div>
-            </div>
-            <div className="queue-card-values">
-              <div className={`queue-number ${getCardTextColorClass(entry.employee_status)}`}>{entry.queue_number}</div>
-              <div className="divider"></div>
-              <div className="desk-info">
-                <div className={`desk-number ${getCardTextColorClass(entry.employee_status)}`}>{entry.employee_desk}</div>
-                <div className={`consultant-name ${getCardTextColorClass(entry.employee_status)}`} style={{ textTransform: 'uppercase' }}>{entry.assigned_employee_name}</div>
+        {queueEntries.map((entry) => {
+          // ИСПОЛЬЗУЕМ НОВЫЕ ФУНКЦИИ для определения цвета по программам
+          const colorClass = getCardColorClassByPrograms(entry);
+          const textColorClass = getCardTextColorClassByPrograms(entry);
+          
+          return (
+            <div key={entry.id} className={`queue-card ${colorClass}`}>
+              <div className="queue-card-header">
+                <div className={`queue-label ${textColorClass}`}>№ ТАЛОНА</div>
+                <div className={`desk-label ${textColorClass}`}>№ КОНСУЛЬТАНТА</div>
+              </div>
+              <div className="queue-card-values">
+                <div className={`queue-number ${textColorClass}`}>{entry.queue_number}</div>
+                <div className="divider"></div>
+                <div className="desk-info">
+                  <div className={`desk-number ${textColorClass}`}>{entry.employee_desk}</div>
+                  <div className={`consultant-name ${textColorClass}`} style={{ textTransform: 'uppercase' }}>
+                    {entry.assigned_employee_name}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="fixed-time">

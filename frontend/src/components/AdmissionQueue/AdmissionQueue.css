@@ -241,7 +241,7 @@
 
 .status-completed {
   background-color: rgba(74, 140, 94, 0.2);
-  color: var(--success-color, #28a745);
+  color: #ffffff;
 }
 
 .status-paused {

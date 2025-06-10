@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaPhoneAlt, FaStar, FaGraduationCap } from 'react-icons/fa';
+import { FaUser, FaPhoneAlt, FaGraduationCap } from 'react-icons/fa'; // Убираем FaStar
 import { useRecaptcha } from '../../hooks/useRecaptcha';
-import { createQueueEntry, getEmployees, queueAPI } from '../../api';
+import { createQueueEntry, queueAPI } from '../../api'; // Убираем getEmployees
 import QueueTicket from '../../components/QueueTicket/QueueTicket';
 import { useTranslation } from 'react-i18next';
 import './PublicQueueForm.css';
@@ -46,16 +46,20 @@ const PublicQueueForm = () => {
   const { t, i18n } = useTranslation();
   const { isReady, isLoading, executeRecaptcha } = useRecaptcha(RECAPTCHA_SITE_KEY);
   
+  // УБИРАЕМ assigned_employee_name из formData
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '+7',
     program: '',
     notes: '',
-    assigned_employee_name: '',
     captcha_token: null,
     form_language: i18n.language
   });
-  const [employees, setEmployees] = useState([]);
+  
+  // УБИРАЕМ состояния связанные с сотрудниками
+  // const [employees, setEmployees] = useState([]);
+  // const [employeeDropdownOpen, setEmployeeDropdownOpen] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -126,22 +130,16 @@ const PublicQueueForm = () => {
         localStorage.removeItem('queueTicket');
       }
     }
-    getEmployees().then(setEmployees).catch(() => setError(t('publicQueueForm.employeeLoadError')));
+    
+    // УБИРАЕМ загрузку сотрудников
+    // getEmployees().then(setEmployees).catch(() => setError(t('publicQueueForm.employeeLoadError')));
+    
     queueAPI.getQueueCount().then((res) => setQueueCount(res.data.count)).catch(() => setQueueCount(null));
   }, [t]);
 
-  const getEmployeeStatusText = (status) => {
-    switch (status) {
-      case 'available':
-        return t('publicQueueForm.employeeStatus.available', 'Доступен');
-      case 'busy':
-        return t('publicQueueForm.employeeStatus.busy', 'Занят');
-      case 'paused':
-        return t('publicQueueForm.employeeStatus.paused', 'На перерыве');
-      default:
-        return '';
-    }
-  };
+  // УБИРАЕМ функции связанные с сотрудниками
+  // const getEmployeeStatusText = (status) => { ... }
+  // const renderStatusBadge = (status) => { ... }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -182,7 +180,6 @@ const PublicQueueForm = () => {
       setLoading(true);
       setError(null);
       
-      
       // Выполняем reCAPTCHA v3
       const captchaToken = await executeRecaptcha('submit_queue_form');
       
@@ -192,17 +189,18 @@ const PublicQueueForm = () => {
         return;
       }
 
-      // ИСПРАВЛЕНИЕ: Правильная структура данных для API
+      // УБИРАЕМ assigned_employee_name из отправляемых данных
       const dataToSend = {
         full_name: formData.full_name,
         phone: formData.phone,
         programs: [formData.program], // Отправляем как массив
         notes: formData.notes || '',
-        assigned_employee_name: formData.assigned_employee_name,
+        // НЕ ОТПРАВЛЯЕМ assigned_employee_name - сервер назначит автоматически
         captcha_token: captchaToken,
         form_language: i18n.language
       };
 
+      console.log('📤 Отправляем данные:', dataToSend);
       
       const response = await createQueueEntry(dataToSend);
       
@@ -212,7 +210,7 @@ const PublicQueueForm = () => {
         full_name: formData.full_name,
         phone: formData.phone,
         programs: [formData.program],
-        assigned_employee_name: formData.assigned_employee_name,
+        assigned_employee_name: response.assigned_employee_name, // Получаем от сервера
         form_language: i18n.language,
         created_at: new Date().toISOString()
       };
@@ -232,18 +230,18 @@ const PublicQueueForm = () => {
         localStorage.setItem('queueTicket', JSON.stringify(enhancedTicketData));
         
       } catch (checkError) {
-        
         setTicket(basicTicketData);
         localStorage.setItem('queueTicket', JSON.stringify(basicTicketData));
       }
       
       setSuccess(true);
+      
+      // УБИРАЕМ assigned_employee_name из сброса формы
       setFormData({
         full_name: '',
         phone: '+7',
         program: '',
         notes: '',
-        assigned_employee_name: '',
         captcha_token: null,
       });
       
@@ -265,18 +263,6 @@ const PublicQueueForm = () => {
       setLoading(false);
     }
   };
-
-  const renderStatusBadge = (status) => {
-    const statusMap = {
-      available: { text: t('publicQueueForm.employeeStatus.available'), class: 'status-available1' },
-      busy: { text: t('publicQueueForm.employeeStatus.busy'), class: 'status-busy1' },
-      paused: { text: t('publicQueueForm.employeeStatus.paused'), class: 'status-paused1' },
-    };
-    const badge = statusMap[status];
-    return badge ? <span className={`status-badge1 ${badge.class}`}>{badge.text}</span> : null;
-  };
-
-  const [employeeDropdownOpen, setEmployeeDropdownOpen] = useState(false);
 
   if (success && ticket) {
     return (
@@ -317,7 +303,6 @@ const PublicQueueForm = () => {
     );
   }
 
-
   return (
     <div className={`public-form-container ${categoryStates.bachelor || categoryStates.master || categoryStates.doctorate ? 'modal-active' : ''}`}>
       <h1 className="form-title-main" style={{ color: '#1A2D6B' }}>{t('publicQueueForm.title')}</h1>
@@ -325,50 +310,49 @@ const PublicQueueForm = () => {
       {error && <div className="alert alert-danger">{error}</div>}
       {isLoading && <p>Загрузка системы защиты...</p>}
       <form onSubmit={handleSubmit} className="public-queue-form">
+        
+        {/* Поле ФИО */}
         <div className="form-group">
           <div className="input-wrapper">
             <FaUser className="field-icon" />
-            <input type="text" id="full_name" name="full_name" value={formData.full_name} onChange={handleChange} placeholder={t('publicQueueForm.fullNameLabel')} required />
+            <input 
+              type="text" 
+              id="full_name" 
+              name="full_name" 
+              value={formData.full_name} 
+              onChange={handleChange} 
+              placeholder={t('publicQueueForm.fullNameLabel')} 
+              required 
+            />
           </div>
         </div>
+        
+        {/* Поле телефона */}
         <div className="form-group">
           <div className="input-wrapper">
             <FaPhoneAlt className="field-icon" />
-            <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handlePhoneChange} placeholder={t('publicQueueForm.phoneLabel')} required />
+            <input 
+              type="tel" 
+              id="phone" 
+              name="phone" 
+              value={formData.phone} 
+              onChange={handlePhoneChange} 
+              placeholder={t('publicQueueForm.phoneLabel')} 
+              required 
+            />
           </div>
         </div>
+        
+        {/* УБИРАЕМ ВЕСЬ БЛОК ВЫБОРА СОТРУДНИКА */}
+        {/*
         <div className="form-group">
           <div className="employee-selector">
-            <div className="employee-selector-header" onClick={() => setEmployeeDropdownOpen(!employeeDropdownOpen)}>
-              <FaStar className="field-icon" />
-              <span className="selected-employee">
-                {formData.assigned_employee_name || t('publicQueueForm.selectEmployee')}
-              </span>
-              <span className={`dropdown-arrow ${employeeDropdownOpen ? 'open' : ''}`}>▼</span>
-            </div>
-            
-            {employeeDropdownOpen && (
-              <div className="employee-dropdown">
-                {employees.map((emp) => (
-                  <div 
-                    key={emp.name} 
-                    className="employee-option"
-                    onClick={() => {
-                      setFormData({ ...formData, assigned_employee_name: emp.name });
-                      setEmployeeDropdownOpen(false);
-                    }}
-                  >
-                    <div className="employee-info">
-                      <span className="employee-name">{emp.name}</span>
-                      {renderStatusBadge(emp.status)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            ...
           </div>
         </div>
+        */}
 
+        {/* Поле выбора программы - остается без изменений */}
         <div className="form-group">
           <label className="field-label">
             <FaGraduationCap className="field-icon" />

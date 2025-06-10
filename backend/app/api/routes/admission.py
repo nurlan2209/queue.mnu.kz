@@ -25,7 +25,7 @@ def finish_work(
     logger.info(f"User {current_user.id} finishing work")
     
     # Если сотрудник занят с абитуриентом, сначала освободим его
-    if current_user.status == EmployeeStatus.BUSY.value:
+    if current_user.status in [EmployeeStatus.BUSY.value, EmployeeStatus.PAUSED.value]:
         # Находим текущую активную заявку для этого сотрудника
         current_entry = db.query(QueueEntry).filter(
             QueueEntry.status == QueueStatus.IN_PROGRESS,
@@ -35,6 +35,7 @@ def finish_work(
         if current_entry:
             # Если есть активная заявка, меняем её статус на COMPLETED
             current_entry.status = QueueStatus.COMPLETED
+            end_processing_time(db, current_entry.id)
             db.add(current_entry)
     
     # Меняем статус сотрудника на OFFLINE
@@ -159,7 +160,8 @@ async def call_next_applicant(
         "processing_time": next_entry.processing_time,
         "form_language": next_entry.form_language,
         "employee_desk": desk,
-        "speech": speech_result
+        "speech": speech_result,
+        "success": True  # ✅ ДОБАВЛЯЕМ success: True
     }
     
     logger.info(f"Queue entry {next_entry.id} moved to IN_PROGRESS, employee now BUSY")
@@ -174,11 +176,11 @@ def complete_current_applicant(
     """Завершить работу с текущим абитуриентом"""
     logger.info(f"User {current_user.id} completing current applicant")
     
-    # Проверяем, что сотрудник занят
-    if current_user.status != EmployeeStatus.BUSY.value:
+    # 🔥 ИСПРАВЛЯЕМ ЛОГИКУ: Разрешаем завершать и из статуса BUSY и PAUSED
+    if current_user.status not in [EmployeeStatus.BUSY.value, EmployeeStatus.PAUSED.value]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="You must be busy with an applicant to complete"
+            detail="You must be busy with an applicant or paused to complete"
         )
     
     # Находим текущую активную заявку для этого сотрудника
@@ -187,24 +189,33 @@ def complete_current_applicant(
         QueueEntry.assigned_employee_name == current_user.full_name
     ).first()
     
-    if current_entry:
-        # Если есть активная заявка, меняем её статус на COMPLETED
-        current_entry.status = QueueStatus.COMPLETED
-        db.add(current_entry)  # Убедимся, что изменения будут сохранены
-        
-        # Вызов функции для расчета времени обработки
-        end_processing_time(db, current_entry.id)
+    if not current_entry:
+        logger.warning(f"No active entry found for employee {current_user.full_name}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No active applicant found to complete"
+        )
     
-    # Меняем статус сотрудника на AVAILABLE
-    current_user.status = EmployeeStatus.AVAILABLE.value
+    # Завершаем заявку
+    current_entry.status = QueueStatus.COMPLETED
+    end_processing_time(db, current_entry.id)
+    db.add(current_entry)
+    
+    # 🎯 ВАЖНО: Определяем новый статус сотрудника
+    # Если сотрудник был на паузе - остается на паузе
+    # Если сотрудник был busy - становится available
+    if current_user.status == EmployeeStatus.PAUSED.value:
+        new_status = EmployeeStatus.PAUSED.value
+        logger.info(f"Employee {current_user.id} remains PAUSED after completing applicant")
+    else:
+        new_status = EmployeeStatus.AVAILABLE.value
+        logger.info(f"Employee {current_user.id} becomes AVAILABLE after completing applicant")
+    
+    current_user.status = new_status
     
     db.commit()
-    
-    if current_entry:
-        db.refresh(current_entry)
+    db.refresh(current_entry)
     db.refresh(current_user)
-    
-    logger.info(f"Employee {current_user.id} now AVAILABLE after completing applicant")
     
     return current_user
 

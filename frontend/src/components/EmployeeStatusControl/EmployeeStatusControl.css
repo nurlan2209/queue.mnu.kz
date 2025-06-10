@@ -1,82 +1,298 @@
+/* EmployeeStatusControl.css - Обновленные стили */
+
 .employee-status-control {
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
 }
 
 .status-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
 }
 
 .status-header h3 {
   margin: 0;
-  font-size: 1.2rem;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
-.status-badge {
-  padding: 6px 12px;
+.status-indicator {
+  padding: 8px 16px;
   border-radius: 20px;
-  font-weight: bold;
-  font-size: 0.9rem;
-  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.status-available {
-  background-color: #28a745;
+.status-indicator.status-available {
+  background-color: #d4edda;
+  color: #155724;
+  border: 2px solid #c3e6cb;
 }
 
-.status-busy {
-  background-color: #dc3545;
-}
-
-.status-paused {
-  background-color: #ffc107;
-  color: #212529;
-}
-
-.status-offline {
-  background-color: #6c757d;
-}
-
-.status-error {
+.status-indicator.status-busy {
   background-color: #f8d7da;
   color: #721c24;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
+  border: 2px solid #f5c6cb;
+}
+
+.status-indicator.status-paused {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 2px solid #ffeaa7;
+}
+
+.status-indicator.status-offline {
+  background-color: #e2e3e5;
+  color: #383d41;
+  border: 2px solid #d6d8db;
+}
+
+.called-applicant {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.called-applicant h4 {
+  margin: 0 0 16px 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.applicant-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.applicant-info p {
+  margin: 0;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.applicant-info strong {
+  display: block;
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 4px;
 }
 
 .status-actions {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.status-btn {
+/* 🆕 НОВЫЕ СТИЛИ для действий с текущим абитуриентом */
+.current-applicant-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  border-radius: 12px;
+  border: 2px solid #ff9a56;
+}
+
+.current-applicant-actions button {
   flex: 1;
-  min-width: 120px;
-  padding: 10px 15px;
-  font-size: 1rem;
+  min-height: 48px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
-.employee-status-loading {
-  padding: 15px;
+.current-applicant-actions .btn-success {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  border: none;
+  color: white;
+}
+
+.current-applicant-actions .btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+}
+
+.current-applicant-actions .btn-warning {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  border: none;
+  color: white;
+}
+
+.current-applicant-actions .btn-warning:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(250, 248, 112, 0.4);
+}
+
+/* 🔔 СТИЛИ для паузы */
+.paused-actions {
   text-align: center;
-  color: #6c757d;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
 }
 
-@media (max-width: 576px) {
-  .status-header {
-    flex-direction: column;
-    align-items: flex-start;
+.pause-info {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.paused-actions button {
+  margin: 0 8px;
+  min-width: 150px;
+  height: 44px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* Основные кнопки */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-height: 44px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(86, 171, 47, 0.4);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-warning:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 251, 147, 0.4);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #485563 0%, #29323c 100%);
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(72, 85, 99, 0.4);
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(116, 185, 255, 0.4);
+}
+
+/* Алерты */
+.alert {
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #ff7675 0%, #fd79a8 100%);
+  color: white;
+  border: 2px solid #e84393;
+}
+
+/* Загрузка и ошибки */
+.employee-status-loading,
+.employee-status-error {
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  color: #6c757d;
+  font-size: 16px;
+}
+
+.employee-status-error {
+  background: linear-gradient(135deg, #ff7675 0%, #fd79a8 100%);
+  color: white;
+}
+
+/* 🎵 АНИМАЦИИ */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.current-applicant-actions {
+  animation: pulse 2s infinite;
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 768px) {
+  .employee-status-control {
+    padding: 16px;
+    margin-bottom: 16px;
   }
   
-  .status-actions {
+  .status-header {
     flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .current-applicant-actions {
+    flex-direction: column;
+  }
+  
+  .applicant-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .paused-actions button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
   }
 }

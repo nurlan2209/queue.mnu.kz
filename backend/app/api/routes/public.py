@@ -31,7 +31,8 @@ def get_display_queue(db: Session = Depends(get_db)):
             "queue_number": entry.queue_number,
             "status": entry.status,
             "assigned_employee_name": entry.assigned_employee_name,
-            "employee_desk": None
+            "employee_desk": None,
+            "programs": entry.programs 
         }
         
         # Ищем информацию о столе сотрудника
@@ -66,7 +67,7 @@ def add_to_queue(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Add applicant to the queue (public endpoint)"""
+    """Add applicant to the queue (public endpoint) with automatic employee assignment"""
     print(f"🚀 Получены данные: {queue_data}")
     
     # Проверяем капчу
@@ -87,21 +88,13 @@ def add_to_queue(
         print(f"❌ Заявка уже существует: {existing_entry.id}")
         raise HTTPException(status_code=400, detail="Вы уже стоите в очереди")
     
-    # Проверяем сотрудника
-    if queue_data.assigned_employee_name:
-        employee = db.query(User).filter(
-            User.full_name == queue_data.assigned_employee_name,
-            User.role == "admission"
-        ).first()
-        if not employee:
-            print(f"❌ Сотрудник не найден: {queue_data.assigned_employee_name}")
-            raise HTTPException(status_code=400, detail="Invalid employee name")
-        print(f"✅ Сотрудник найден: {employee.full_name}")
+    # УБИРАЕМ ПРОВЕРКУ СОТРУДНИКА - теперь он назначается автоматически
+    # НЕ ПРОВЕРЯЕМ queue_data.assigned_employee_name
     
-    # Создаем заявку
+    # Создаем заявку с автоматическим назначением сотрудника
     try:
         result = create_queue_entry(db, queue_data)
-        print(f"✅ Заявка создана: {result.id}, номер: {result.queue_number}")
+        print(f"✅ Заявка создана: {result.id}, номер: {result.queue_number}, сотрудник: {result.assigned_employee_name}")
         return result
     except Exception as e:
         print(f"❌ Ошибка создания заявки: {e}")
