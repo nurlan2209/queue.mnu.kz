@@ -188,12 +188,6 @@ const PublicQueueForm = () => {
       return;
     }
 
-    // Проверяем, что сотрудник выбран
-    if (!formData.assigned_employee_name) {
-      setError(t('publicQueueForm.selectEmployee'));
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
@@ -228,7 +222,7 @@ const PublicQueueForm = () => {
         full_name: formData.full_name,
         phone: formData.phone,
         programs: [formData.program],
-        assigned_employee_name: formData.assigned_employee_name, // Используем выбранного
+        assigned_employee_name: response.assigned_employee_name || formData.assigned_employee_name, 
         form_language: i18n.language,
         created_at: new Date().toISOString()
       };
@@ -262,6 +256,7 @@ const PublicQueueForm = () => {
         notes: '',
         assigned_employee_name: '', // Сбрасываем выбранного сотрудника
         captcha_token: null,
+        form_language: i18n.language
       });
       
       // Обновляем количество в очереди
@@ -366,7 +361,7 @@ const PublicQueueForm = () => {
         <div className="form-group">
           <label className="field-label" style={{ marginBottom: '0.5rem', display: 'block', color: '#6c757d', fontSize: '0.9rem' }}>
             <FaUserTie className="field-icon" style={{ marginRight: '0.5rem' }} />
-            Выбор сотрудника (опционально)
+            {t('publicQueueForm.employeeSelectionLabel')}
           </label>
           <div className="auto-assignment-note" style={{ 
             fontSize: '0.8rem', 
@@ -374,7 +369,7 @@ const PublicQueueForm = () => {
             marginBottom: '0.5rem',
             fontStyle: 'italic'
           }}>
-            Если не выбрать, заявка будет назначена автоматически по номеру стола
+            ✅ {t('publicQueueForm.autoAssignmentNote')}
           </div>
           <div className="employee-selector">
             <div 
@@ -383,21 +378,21 @@ const PublicQueueForm = () => {
             >
               <FaUserTie className="field-icon" />
               <span className="selected-employee">
-                {formData.assigned_employee_name || ''}
+                {formData.assigned_employee_name || t('publicQueueForm.autoAssignment')}
               </span>
               <span className={`dropdown-arrow ${employeeDropdownOpen ? 'open' : ''}`}>▼</span>
             </div>
             
             {employeeDropdownOpen && (
               <div className="employee-dropdown">
-                {/* Добавляем опцию автоматического назначения */}
+                {/* Опция автоматического назначения */}
                 <div
                   className="employee-option"
                   onClick={() => handleEmployeeSelect('')}
                 >
                   <div className="employee-info">
                     <span className="employee-name" style={{ fontStyle: 'italic', color: '#6c757d' }}>
-                      {t('publicQueueForm.autoAssignment')} (по номеру стола)
+                      🤖 {t('publicQueueForm.autoAssignmentOption')}
                     </span>
                   </div>
                 </div>
@@ -414,16 +409,16 @@ const PublicQueueForm = () => {
                       onClick={() => handleEmployeeSelect(employee.name)}
                     >
                       <div className="employee-info">
-                        <span className="employee-name">{employee.name}</span>
+                        <span className="employee-name">👤 {employee.name}</span>
                         {employee.desk && (
                           <span style={{ fontSize: '0.8rem', color: '#6c757d' }}>
-                            Стол: {employee.desk}
+                            🪑 {t('publicQueueForm.desk')}: {employee.desk}
                           </span>
                         )}
                         {/* Показываем статус только для сотрудников на перерыве */}
                         {employee.status === 'paused' && (
                           <span className="employee-pause-note">
-                            ({getEmployeeStatusText(employee.status)})
+                            ⏸️ ({getEmployeeStatusText(employee.status)})
                           </span>
                         )}
                       </div>
