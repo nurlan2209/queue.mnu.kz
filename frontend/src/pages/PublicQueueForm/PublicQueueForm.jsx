@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaPhoneAlt, FaGraduationCap } from 'react-icons/fa'; // Убираем FaStar
+import { FaUser, FaPhoneAlt, FaGraduationCap, FaUserTie } from 'react-icons/fa';
 import { useRecaptcha } from '../../hooks/useRecaptcha';
-import { createQueueEntry, queueAPI } from '../../api'; // Убираем getEmployees
+import { createQueueEntry, queueAPI, getEmployees } from '../../api';
 import QueueTicket from '../../components/QueueTicket/QueueTicket';
 import { useTranslation } from 'react-i18next';
 import './PublicQueueForm.css';
@@ -46,19 +46,20 @@ const PublicQueueForm = () => {
   const { t, i18n } = useTranslation();
   const { isReady, isLoading, executeRecaptcha } = useRecaptcha(RECAPTCHA_SITE_KEY);
   
-  // УБИРАЕМ assigned_employee_name из formData
+  // ВОЗВРАЩАЕМ assigned_employee_name в formData
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '+7',
     program: '',
     notes: '',
+    assigned_employee_name: '', // Возвращаем поле сотрудника
     captcha_token: null,
     form_language: i18n.language
   });
   
-  // УБИРАЕМ состояния связанные с сотрудниками
-  // const [employees, setEmployees] = useState([]);
-  // const [employeeDropdownOpen, setEmployeeDropdownOpen] = useState(false);
+  // ВОЗВРАЩАЕМ состояния связанные с сотрудниками
+  const [employees, setEmployees] = useState([]);
+  const [employeeDropdownOpen, setEmployeeDropdownOpen] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -131,15 +132,20 @@ const PublicQueueForm = () => {
       }
     }
     
-    // УБИРАЕМ загрузку сотрудников
-    // getEmployees().then(setEmployees).catch(() => setError(t('publicQueueForm.employeeLoadError')));
+    // ВОЗВРАЩАЕМ загрузку сотрудников
+    getEmployees().then(setEmployees).catch(() => setError(t('publicQueueForm.employeeLoadError')));
     
     queueAPI.getQueueCount().then((res) => setQueueCount(res.data.count)).catch(() => setQueueCount(null));
   }, [t]);
 
-  // УБИРАЕМ функции связанные с сотрудниками
-  // const getEmployeeStatusText = (status) => { ... }
-  // const renderStatusBadge = (status) => { ... }
+  // ВОЗВРАЩАЕМ функцию получения текста статуса сотрудника
+  const getEmployeeStatusText = (status) => {
+    // Показываем только если сотрудник на перерыве
+    if (status === 'paused') {
+      return t('publicQueueForm.employeeStatus.paused');
+    }
+    return ''; // Для остальных статусов не показываем текст
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -155,6 +161,12 @@ const PublicQueueForm = () => {
       master: false,
       doctorate: false,
     });
+  };
+
+  // ВОЗВРАЩАЕМ обработчик выбора сотрудника
+  const handleEmployeeSelect = (employeeName) => {
+    setFormData({ ...formData, assigned_employee_name: employeeName });
+    setEmployeeDropdownOpen(false);
   };
 
   const toggleCategory = (category) => {
@@ -176,6 +188,12 @@ const PublicQueueForm = () => {
       return;
     }
 
+    // Проверяем, что сотрудник выбран
+    if (!formData.assigned_employee_name) {
+      setError(t('publicQueueForm.selectEmployee'));
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -189,13 +207,13 @@ const PublicQueueForm = () => {
         return;
       }
 
-      // УБИРАЕМ assigned_employee_name из отправляемых данных
+      // ВОЗВРАЩАЕМ assigned_employee_name в отправляемые данные
       const dataToSend = {
         full_name: formData.full_name,
         phone: formData.phone,
         programs: [formData.program], // Отправляем как массив
         notes: formData.notes || '',
-        // НЕ ОТПРАВЛЯЕМ assigned_employee_name - сервер назначит автоматически
+        assigned_employee_name: formData.assigned_employee_name, // Возвращаем отправку
         captcha_token: captchaToken,
         form_language: i18n.language
       };
@@ -210,7 +228,7 @@ const PublicQueueForm = () => {
         full_name: formData.full_name,
         phone: formData.phone,
         programs: [formData.program],
-        assigned_employee_name: response.assigned_employee_name, // Получаем от сервера
+        assigned_employee_name: formData.assigned_employee_name, // Используем выбранного
         form_language: i18n.language,
         created_at: new Date().toISOString()
       };
@@ -236,12 +254,13 @@ const PublicQueueForm = () => {
       
       setSuccess(true);
       
-      // УБИРАЕМ assigned_employee_name из сброса формы
+      // ВОЗВРАЩАЕМ assigned_employee_name в сброс формы
       setFormData({
         full_name: '',
         phone: '+7',
         program: '',
         notes: '',
+        assigned_employee_name: '', // Сбрасываем выбранного сотрудника
         captcha_token: null,
       });
       
@@ -343,14 +362,78 @@ const PublicQueueForm = () => {
           </div>
         </div>
         
-        {/* УБИРАЕМ ВЕСЬ БЛОК ВЫБОРА СОТРУДНИКА */}
-        {/*
+        {/* ВОЗВРАЩАЕМ БЛОК ВЫБОРА СОТРУДНИКА */}
         <div className="form-group">
+          <label className="field-label" style={{ marginBottom: '0.5rem', display: 'block', color: '#6c757d', fontSize: '0.9rem' }}>
+            <FaUserTie className="field-icon" style={{ marginRight: '0.5rem' }} />
+            Выбор сотрудника (опционально)
+          </label>
+          <div className="auto-assignment-note" style={{ 
+            fontSize: '0.8rem', 
+            color: '#6c757d', 
+            marginBottom: '0.5rem',
+            fontStyle: 'italic'
+          }}>
+            Если не выбрать, заявка будет назначена автоматически по номеру стола
+          </div>
           <div className="employee-selector">
-            ...
+            <div 
+              className="employee-selector-header"
+              onClick={() => setEmployeeDropdownOpen(!employeeDropdownOpen)}
+            >
+              <FaUserTie className="field-icon" />
+              <span className="selected-employee">
+                {formData.assigned_employee_name || ''}
+              </span>
+              <span className={`dropdown-arrow ${employeeDropdownOpen ? 'open' : ''}`}>▼</span>
+            </div>
+            
+            {employeeDropdownOpen && (
+              <div className="employee-dropdown">
+                {/* Добавляем опцию автоматического назначения */}
+                <div
+                  className="employee-option"
+                  onClick={() => handleEmployeeSelect('')}
+                >
+                  <div className="employee-info">
+                    <span className="employee-name" style={{ fontStyle: 'italic', color: '#6c757d' }}>
+                      {t('publicQueueForm.autoAssignment')} (по номеру стола)
+                    </span>
+                  </div>
+                </div>
+                
+                {employees.length === 0 ? (
+                  <div className="employee-option">
+                    <span>{t('publicQueueForm.employeeLoadError')}</span>
+                  </div>
+                ) : (
+                  employees.map((employee) => (
+                    <div
+                      key={employee.name}
+                      className="employee-option"
+                      onClick={() => handleEmployeeSelect(employee.name)}
+                    >
+                      <div className="employee-info">
+                        <span className="employee-name">{employee.name}</span>
+                        {employee.desk && (
+                          <span style={{ fontSize: '0.8rem', color: '#6c757d' }}>
+                            Стол: {employee.desk}
+                          </span>
+                        )}
+                        {/* Показываем статус только для сотрудников на перерыве */}
+                        {employee.status === 'paused' && (
+                          <span className="employee-pause-note">
+                            ({getEmployeeStatusText(employee.status)})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
-        */}
 
         {/* Поле выбора программы - остается без изменений */}
         <div className="form-group">

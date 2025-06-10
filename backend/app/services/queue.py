@@ -17,60 +17,75 @@ def select_employee_automatically(db: Session) -> Optional[str]:
     """
     Автоматически выбирает сотрудника для новой заявки
     
-    Алгоритм:
-    1. Находит всех доступных сотрудников (available, busy)
-    2. Считает количество активных заявок у каждого
-    3. Выбирает сотрудника с минимальным количеством заявок
-    4. При равенстве - случайный выбор
+    Простая логика по кругу:
+    1. Находит всех доступных сотрудников (available, busy) - ИСКЛЮЧАЯ paused
+    2. Сортирует по номеру стола (по возрастанию)
+    3. Выбирает следующего по кругу (round-robin)
+    4. Сотрудники на паузе полностью исключаются из ротации
     """
     try:
-        # Получаем всех доступных сотрудников (не offline, не paused)
+        # Получаем всех доступных сотрудников (НЕ offline, НЕ paused)
         available_employees = db.query(User).filter(
             User.role == "admission",
             User.status.in_([EmployeeStatus.AVAILABLE.value, EmployeeStatus.BUSY.value])
+            # ИСКЛЮЧАЕМ EmployeeStatus.PAUSED - они не участвуют в ротации
         ).all()
         
         if not available_employees:
-            logger.warning("No available employees found for auto-assignment")
+            logger.warning("No available employees found for auto-assignment (excluding paused)")
             return None
         
-        # Считаем количество активных заявок для каждого сотрудника
-        employee_workload = []
+        # Обрабатываем каждого сотрудника
+        employee_list = []
         
         for employee in available_employees:
-            # Считаем заявки со статусом WAITING и IN_PROGRESS
-            active_count = db.query(QueueEntry).filter(
-                QueueEntry.assigned_employee_name == employee.full_name,
-                QueueEntry.status.in_([QueueStatus.WAITING, QueueStatus.IN_PROGRESS])
-            ).count()
+            # Пытаемся извлечь номер стола как число
+            desk_number = 9999  # Значение по умолчанию для сотрудников без стола
+            if employee.desk:
+                try:
+                    import re
+                    numbers = re.findall(r'\d+', str(employee.desk))
+                    if numbers:
+                        desk_number = int(numbers[0])
+                except (ValueError, AttributeError):
+                    pass
             
-            employee_workload.append({
+            employee_list.append({
                 'employee': employee,
-                'count': active_count
+                'desk_number': desk_number,
+                'desk_original': employee.desk or 'Не указан',
+                'status': employee.status
             })
-            
-            logger.info(f"Employee {employee.full_name}: {active_count} active entries")
         
-        # Находим минимальное количество заявок
-        min_count = min(emp['count'] for emp in employee_workload)
+        # Сортируем по номеру стола (по возрастанию)
+        employee_list.sort(key=lambda x: x['desk_number'])
         
-        # Находим всех сотрудников с минимальным количеством заявок
-        employees_with_min_count = [
-            emp['employee'] for emp in employee_workload 
-            if emp['count'] == min_count
-        ]
+        # Простая ротация: берем общее количество заявок по модулю количества сотрудников
+        total_entries = db.query(QueueEntry).count()
+        selected_index = total_entries % len(employee_list)
         
-        # Если несколько сотрудников с одинаковым минимумом - выбираем случайно
-        selected_employee = random.choice(employees_with_min_count)
+        selected_employee_data = employee_list[selected_index]
+        selected_employee = selected_employee_data['employee']
         
-        logger.info(f"Auto-selected employee: {selected_employee.full_name} (workload: {min_count} entries)")
+        logger.info(f"Round-robin selection (entry #{total_entries}):")
+        logger.info(f"Available employees ({len(employee_list)}):")
+        for i, emp_data in enumerate(employee_list):
+            marker = " ← SELECTED" if i == selected_index else ""
+            logger.info(f"  {i}. {emp_data['employee'].full_name} - "
+                       f"Стол {emp_data['desk_number']} ({emp_data['desk_original']}) - "
+                       f"Status: {emp_data['status']}{marker}")
+        
+        logger.info(f"Selected employee: {selected_employee.full_name} "
+                   f"(desk: {selected_employee_data['desk_original']}, "
+                   f"desk_number: {selected_employee_data['desk_number']}, "
+                   f"index: {selected_index}/{len(employee_list)-1})")
         
         return selected_employee.full_name
         
     except Exception as e:
         logger.error(f"Error in automatic employee selection: {e}")
         return None
-
+        
 def create_queue_entry(db: Session, queue: PublicQueueCreate) -> QueueResponse:
     """Создать новую заявку с автоматическим распределением сотрудника"""
     try:

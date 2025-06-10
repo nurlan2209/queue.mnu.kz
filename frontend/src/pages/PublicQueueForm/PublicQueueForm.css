@@ -503,3 +503,38 @@
   accent-color: var(--primary-color);
   margin: 0;
 }
+
+.employee-pause-note {
+  font-size: 0.85rem;
+  color: #856404;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.employee-option {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.employee-option:last-child {
+  border-bottom: none;
+}
+
+.employee-option:hover {
+  background-color: #f8f9fa;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 576px) {
+  .employee-pause-note {
+    font-size: 0.8rem;
+  }
+  
+  .employee-info {
+    gap: 0.15rem;
+  }
+}
