@@ -489,7 +489,9 @@ const PublicQueueForm = () => {
           disabled={loading || !isReady}
         >
           {loading ? t('publicQueueForm.submitting') : t('publicQueueForm.submitButton')}
+          
         </button>
+        
       </form>
     </div>
   );

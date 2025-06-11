@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "focus-strand-462605-u4",
+  "private_key_id": "ef29335428f3e5120a3afa3ed4d421bac0550342",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC3tUzcYdwdMhJT\nQNXBDQj3qGM6DAdh8th73/MsEaTUaobVMmR+kn/kNCkZba6KfXy1cU2TdMQRTxL3\nTbykcVKMa7iTfy+CL2mYQtvQT6ZZunI8JpQndyjz+OIvyKCrE+kEnxcRSbZhwELo\n0clu/8jtS3k9mJJgzxN4m7ZvdM/33kRFQG1bjJJ8CsIOqboGmSmEL8JftyJ7cdR7\nPsba5T/nUub651UQwzKjWYO+u3jADmGJdhZX+S1AkzeNOJXHU9SvYaMLS0J+8eTK\nM3LlDWuLafoShiOlLdUrC2D+orwYhkK30npkjVgOLCCLd5vultbEgwxj2oeVSmBI\nxJgEdQgPAgMBAAECggEAC2FVT2pWhDknrnWb6EIiSz6TVbNiD7IcsWEjA24HtnWa\nQFccp5n0Bz3TSp/N9LFSX5ETG66GPjDrqAXuSNzmSWGbml4szL/wJtOuzJ2VMgYd\nRoGjTZCRqQ9takVfl/Ql9rh+PtQV/WyMwzcfvIW8O4r130LLf+jEDYV5NzgBcXAo\nonwkTUEmJoRnOydHUm5G//iMBSgKSKKG8FNiVaI3x/BZ0erdWDNVo4XVj7Yc06Vr\nY8K0hUmOys/NhTLAKVKbhHArEB6qwqmg4BF3pIte5DCczxEujOYmgiji1BW2BnVp\nJLGpwhKEE4//w5w4UmnpGnNzo07FT1a+Wh0nel6tDQKBgQDrfz/nbk73tlzcWOLI\nXEYlwYFBWhc04I/MTwGVJkE4KCc5YtbgpwPgarLS5zTfhZMQL0r/mOxg7eNFTTVO\nnR4IRsrzlc1B1yITjpzck9aS6Em76SqXvdXh9CoH/q6nQIXbGm3nCnLM26B7to/C\ndGy+ovtrBZqtP+2ZrVTGqxPsiwKBgQDHs8g/d6HhoIOyWMSMpUtjoha/d4XAuqTa\nCPhOFy9Gh+n/p+6z7ZvZ8xHXB8jmfPsGyWet33IatfbVK5jLYTszLX4inS60qW0/\nJjt/tezyn5Aga0ClN0QPvQ+skqm9takjZCuozCVGaHb7keNIPQ7qbG1h8r5OSbbs\nqREx/h2vDQKBgQCE2X1IZn8f2P2bxHzzALMF25q6LkOHLeORI0TGShViw6wVAIAt\nrapPMIH+3jWCnwzuhW9ur2sx5yFd2AdpeNMXYjBdp7VqHh34IGy3NqNGrsnhutCv\nV4VP+Xi4l+EZMxoQF2HGg6tti7yF7eA9l4Y9KR5iKoAumjDEj/aSOLJ9rwKBgQDA\nvt7pkvflo105B8A811UaRtmZ1yx7RinSX5H5HRt+AbRyEo2rkAw6ogZ3+oWHIN3Q\nQRgWk3G4IiSovrlsot3WmXQCyJ7JtDVDHA2VR+v4iNU81QfB7sN8RUgZkjzOY8Vp\n6UbSVqcre6xLRxWNJZF95UT1oqrXOQKbDNsR22ifCQKBgHvjMdPSUU7Nk7paxbfx\nEt48EqzAWA8+Mmkc66gPZKZtO06WG8MqAPFlLVOV+pZCRbRsNGmIDss5ner0oZ7N\n2tzEaX82OmHDhkMIrl1SNS7nUuwqZYc8MKblRWv1Doj7/LE3CkzE/gk638uwyyqm\nmfn+WzmjEyMXDvGN6SemwSbO\n-----END PRIVATE KEY-----\n",
+  "client_email": "serviceaccsheets@focus-strand-462605-u4.iam.gserviceaccount.com",
+  "client_id": "115406365068942601165",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/serviceaccsheets%40focus-strand-462605-u4.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

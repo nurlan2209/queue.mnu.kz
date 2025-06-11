@@ -4,6 +4,7 @@ from fastapi.responses import Response
 from app.api.routes import auth, queue, admission, admin, public
 from app.database import Base, engine
 from app.config import settings
+from app.services.scheduler import initialize_sync_scheduler, shutdown_sync_scheduler
 
 Base.metadata.create_all(bind=engine)
 
@@ -30,6 +31,26 @@ app.include_router(public.router, prefix="/api", tags=["public"])  # Это уж
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Admission Queue API"}
+
+@app.on_event("startup")
+async def startup_event():
+    """События при запуске приложения"""
+    print("🚀 Запуск приложения...")
+    
+    # Инициализируем планировщик синхронизации
+    initialize_sync_scheduler()
+    
+    print("✅ Приложение запущено")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """События при остановке приложения"""
+    print("🛑 Остановка приложения...")
+    
+    # Останавливаем планировщик синхронизации
+    shutdown_sync_scheduler()
+    
+    print("✅ Приложение остановлено")
 
 if __name__ == "__main__":
     import uvicorn

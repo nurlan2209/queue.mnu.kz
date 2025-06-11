@@ -4,4 +4,5 @@ from app.database import Base
 from app.models.user import User
 from app.models.queue import QueueEntry
 from app.models.video import VideoSettings
-from app.models.archive import ArchivedQueueEntry  # Добавляем новую модель
+from app.models.archive import ArchivedQueueEntry
+from app.models.sync_settings import SyncSettings, SyncLog

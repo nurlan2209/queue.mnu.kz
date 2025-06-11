@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     # Google TTS вместо Yandex
     GOOGLE_TTS_API_KEY: Optional[str] = ""
 
+    GOOGLE_CREDENTIALS_PATH: str = "focus-strand-462605-u4-ef29335428f3.json"
+    GOOGLE_SHEETS_SCOPES: list = ["https://www.googleapis.com/auth/spreadsheets"]
+
     postgres_user: Optional[str] = None
     postgres_password: Optional[str] = None
     postgres_db: Optional[str] = None
