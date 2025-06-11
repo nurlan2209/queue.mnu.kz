@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_, String
+from sqlalchemy import func, and_, or_, String, text
 from typing import List, Optional
+import logging
 
 from app.database import get_db
 from app.models.user import User
@@ -13,7 +14,7 @@ from app.schemas import AdminUserCreate, UserResponse, UserUpdate
 from app.security import get_admin_user
 from app.services.user import create_user
 from app.services.queue import get_all_queue_entries
-from app.services.archive import get_archive_statistics, cleanup_old_completed_entries
+from app.services.archive import get_archive_statistics, cleanup_old_completed_entries, archive_queue_entry
 from app.models.archive import ArchivedQueueEntry
 from fastapi.responses import StreamingResponse
 import io
@@ -22,6 +23,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # Полный словарь для маппинга названий программ на коды
 PROGRAM_MAPPING = {
@@ -111,6 +113,148 @@ PROGRAM_MAPPING = {
     "phd in law": "law",
     "phd in economics": "phdEconomics"
 }
+
+@router.post("/sync/google-sheets/full")
+def full_sync_to_google_sheets(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Полная синхронизация всех данных из архива в Google Sheets"""
+    try:
+        from app.services.google_sheets import google_sheets_service
+        
+        logger.info("🚀 Запуск полной синхронизации с Google Sheets...")
+        
+        result = google_sheets_service.sync_all_data(db)
+        
+        if result.get("success"):
+            logger.info(f"✅ Полная синхронизация завершена успешно")
+            return {
+                "success": True,
+                "message": "Full synchronization completed successfully",
+                "details": result
+            }
+        else:
+            logger.error(f"❌ Ошибка полной синхронизации: {result.get('error')}")
+            return {
+                "success": False,
+                "message": "Full synchronization failed",
+                "error": result.get("error")
+            }
+            
+    except Exception as e:
+        logger.error(f"❌ Исключение при полной синхронизации: {e}")
+        raise HTTPException(status_code=500, detail=f"Full sync failed: {str(e)}")
+
+@router.get("/sync/test-now")
+def test_sync_now(db: Session = Depends(get_db)):
+    """Временный роут для быстрого тестирования синхронизации"""
+    try:
+        from app.services.google_sheets import google_sheets_service
+        result = google_sheets_service.sync_all_data(db)
+        return result
+    except Exception as e:
+        return {"error": str(e)}
+
+@router.get("/sync/google-sheets/status")
+def get_sync_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Получить статус синхронизации с Google Sheets"""
+    try:
+        from app.services.scheduler import realtime_sync
+        from app.services.google_sheets import google_sheets_service
+        
+        # Проверяем доступность Google Sheets API
+        is_available = google_sheets_service._is_available()
+        
+        # Получаем статистику из архива
+        total_archive_entries = db.query(ArchivedQueueEntry).count()
+        
+        # Пытаемся получить количество строк в Google Sheets
+        sheets_rows = 0
+        sheets_error = None
+        
+        if is_available:
+            try:
+                # Получаем данные из Google Sheets для подсчета
+                range_name = f'{google_sheets_service.sheet_name}!A:A'
+                result = google_sheets_service.service.spreadsheets().values().get(
+                    spreadsheetId=google_sheets_service.spreadsheet_id,
+                    range=range_name
+                ).execute()
+                
+                values = result.get('values', [])
+                sheets_rows = len(values) - 1 if values else 0  # -1 для заголовка
+                
+            except Exception as e:
+                sheets_error = str(e)
+        
+        # Получаем статистику синхронизации
+        sync_stats = realtime_sync.get_sync_stats()
+        
+        return {
+            "success": True,
+            "google_sheets_available": is_available,
+            "total_archive_entries": total_archive_entries,
+            "google_sheets_rows": sheets_rows,
+            "sheets_error": sheets_error,
+            "sync_stats": sync_stats,
+            "needs_full_sync": sheets_rows < total_archive_entries
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка получения статуса синхронизации: {e}")
+        raise HTTPException(status_code=500, detail=f"Status check failed: {str(e)}")
+
+@router.post("/sync/google-sheets/test")
+def test_google_sheets_connection(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Тестирование подключения к Google Sheets"""
+    try:
+        from app.services.google_sheets import google_sheets_service
+        
+        if not google_sheets_service._is_available():
+            return {
+                "success": False,
+                "message": "Google Sheets API недоступен"
+            }
+        
+        # Пробуем записать тестовые данные
+        test_data = [["Test", "Data", "Connection", datetime.now().isoformat()]]
+        
+        try:
+            # Добавляем тестовую строку
+            append_request = google_sheets_service.service.spreadsheets().values().append(
+                spreadsheetId=google_sheets_service.spreadsheet_id,
+                range=google_sheets_service.sheet_name,
+                valueInputOption='RAW',
+                insertDataOption='INSERT_ROWS',
+                body={'values': test_data}
+            )
+            
+            result = append_request.execute()
+            
+            return {
+                "success": True,
+                "message": "Google Sheets connection successful",
+                "sheet_name": google_sheets_service.sheet_name,
+                "spreadsheet_id": google_sheets_service.spreadsheet_id,
+                "test_result": result.get('updates', {})
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"Google Sheets write test failed: {str(e)}"
+            }
+            
+    except Exception as e:
+        logger.error(f"❌ Ошибка тестирования Google Sheets: {e}")
+        raise HTTPException(status_code=500, detail=f"Test failed: {str(e)}")
 
 def get_program_codes_by_name(program_name: str) -> List[str]:
     """
@@ -285,7 +429,6 @@ def get_all_queue_entries_api(
 ):
     """Get all queue entries with filters (admin only)"""
     from datetime import datetime
-    from sqlalchemy import func, and_, or_, text
     
     # Начинаем с базового запроса
     query = db.query(QueueEntry)
@@ -378,6 +521,287 @@ def update_employee(
     db.commit()
     db.refresh(employee)
     return employee
+
+# === НОВЫЕ ФУНКЦИИ ДЛЯ УДАЛЕНИЯ ЗАПИСЕЙ ===
+
+@router.delete("/queue/{queue_id}")
+def delete_queue_entry_admin(
+    queue_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Удалить заявку из очереди (админ) с синхронизацией"""
+    try:
+        # Ищем запись в основной таблице
+        queue_entry = db.query(QueueEntry).filter(QueueEntry.id == queue_id).first()
+        
+        if queue_entry:
+            # Удаляем из основной таблицы
+            db.delete(queue_entry)
+            logger.info(f"🗑️ Удалена запись {queue_id} из основной очереди")
+        
+        # Ищем запись в архиве
+        archived_entry = db.query(ArchivedQueueEntry).filter(
+            or_(
+                ArchivedQueueEntry.id == queue_id,
+                ArchivedQueueEntry.original_id == queue_id
+            )
+        ).first()
+        
+        if archived_entry:
+            # 🔥 ВАЖНО: Удаляем из архива - это автоматически запустит синхронизацию с Google Sheets
+            db.delete(archived_entry)
+            logger.info(f"🗑️ Удалена запись {queue_id} из архива")
+        
+        if not queue_entry and not archived_entry:
+            raise HTTPException(status_code=404, detail="Queue entry not found")
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "Queue entry deleted successfully",
+            "deleted_from_queue": bool(queue_entry),
+            "deleted_from_archive": bool(archived_entry)
+        }
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"❌ Ошибка удаления заявки {queue_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error deleting queue entry: {str(e)}")
+
+@router.post("/queue/bulk-delete")
+def bulk_delete_queue_entries(
+    entry_ids: List[str],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Массовое удаление заявок с синхронизацией"""
+    try:
+        deleted_queue = 0
+        deleted_archive = 0
+        
+        for queue_id in entry_ids:
+            # Удаляем из основной таблицы
+            queue_entry = db.query(QueueEntry).filter(QueueEntry.id == queue_id).first()
+            if queue_entry:
+                db.delete(queue_entry)
+                deleted_queue += 1
+            
+            # Удаляем из архива (автоматически синхронизируется с Google Sheets)
+            archived_entry = db.query(ArchivedQueueEntry).filter(
+                or_(
+                    ArchivedQueueEntry.id == queue_id,
+                    ArchivedQueueEntry.original_id == queue_id
+                )
+            ).first()
+            if archived_entry:
+                db.delete(archived_entry)
+                deleted_archive += 1
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"Bulk delete completed",
+            "deleted_from_queue": deleted_queue,
+            "deleted_from_archive": deleted_archive,
+            "total_processed": len(entry_ids)
+        }
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"❌ Ошибка массового удаления: {e}")
+        raise HTTPException(status_code=500, detail=f"Error bulk deleting: {str(e)}")
+
+@router.post("/archive/cleanup")
+def cleanup_archive(
+    days_old: int = 30,
+    status_filter: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Очистка архива (удаление старых записей) с синхронизацией"""
+    try:
+        from datetime import datetime, timedelta
+        
+        cutoff_date = datetime.utcnow() - timedelta(days=days_old)
+        
+        # Формируем запрос для поиска старых записей
+        query = db.query(ArchivedQueueEntry).filter(
+            ArchivedQueueEntry.archived_at < cutoff_date
+        )
+        
+        # Добавляем фильтр по статусу если указан
+        if status_filter:
+            query = query.filter(ArchivedQueueEntry.status == status_filter)
+        
+        # Получаем записи для подсчета
+        old_entries = query.all()
+        entries_count = len(old_entries)
+        
+        if entries_count == 0:
+            return {
+                "success": True,
+                "message": "No entries found for cleanup",
+                "deleted_count": 0,
+                "cutoff_date": cutoff_date.isoformat()
+            }
+        
+        # Удаляем найденные записи (каждая автоматически удалится из Google Sheets)
+        for entry in old_entries:
+            db.delete(entry)
+            logger.info(f"🗑️ Удаляем старую запись {entry.id} из архива (дата: {entry.archived_at})")
+        
+        db.commit()
+        
+        logger.info(f"✅ Очистка архива завершена: удалено {entries_count} записей старше {days_old} дней")
+        
+        return {
+            "success": True,
+            "message": f"Archive cleanup completed",
+            "deleted_count": entries_count,
+            "cutoff_date": cutoff_date.isoformat(),
+            "days_old": days_old,
+            "status_filter": status_filter
+        }
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"❌ Ошибка очистки архива: {e}")
+        raise HTTPException(status_code=500, detail=f"Error cleaning up archive: {str(e)}")
+
+@router.delete("/archive/{entry_id}")
+def delete_archive_entry(
+    entry_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Удалить конкретную запись из архива с синхронизацией"""
+    try:
+        # Ищем запись в архиве
+        archived_entry = db.query(ArchivedQueueEntry).filter(
+            or_(
+                ArchivedQueueEntry.id == entry_id,
+                ArchivedQueueEntry.original_id == entry_id
+            )
+        ).first()
+        
+        if not archived_entry:
+            raise HTTPException(status_code=404, detail="Archive entry not found")
+        
+        # Удаляем запись (автоматически синхронизируется с Google Sheets)
+        db.delete(archived_entry)
+        db.commit()
+        
+        logger.info(f"🗑️ Удалена запись {entry_id} из архива")
+        
+        return {
+            "success": True,
+            "message": "Archive entry deleted successfully",
+            "entry_id": entry_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"❌ Ошибка удаления записи из архива {entry_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error deleting archive entry: {str(e)}")
+
+@router.post("/archive/bulk-delete")
+def bulk_delete_archive_entries(
+    entry_ids: List[str],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Массовое удаление записей из архива с синхронизацией"""
+    try:
+        deleted_count = 0
+        not_found_count = 0
+        
+        for entry_id in entry_ids:
+            # Ищем запись в архиве
+            archived_entry = db.query(ArchivedQueueEntry).filter(
+                or_(
+                    ArchivedQueueEntry.id == entry_id,
+                    ArchivedQueueEntry.original_id == entry_id
+                )
+            ).first()
+            
+            if archived_entry:
+                db.delete(archived_entry)
+                deleted_count += 1
+                logger.info(f"🗑️ Удалена запись {entry_id} из архива")
+            else:
+                not_found_count += 1
+                logger.warning(f"⚠️ Запись {entry_id} не найдена в архиве")
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"Bulk archive delete completed",
+            "deleted_count": deleted_count,
+            "not_found_count": not_found_count,
+            "total_processed": len(entry_ids)
+        }
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"❌ Ошибка массового удаления из архива: {e}")
+        raise HTTPException(status_code=500, detail=f"Error bulk deleting from archive: {str(e)}")
+
+@router.get("/archive/cleanup/preview")
+def preview_archive_cleanup(
+    days_old: int = 30,
+    status_filter: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Предварительный просмотр записей для очистки архива"""
+    try:
+        from datetime import datetime, timedelta
+        
+        cutoff_date = datetime.utcnow() - timedelta(days=days_old)
+        
+        # Формируем запрос для поиска старых записей
+        query = db.query(ArchivedQueueEntry).filter(
+            ArchivedQueueEntry.archived_at < cutoff_date
+        )
+        
+        # Добавляем фильтр по статусу если указан
+        if status_filter:
+            query = query.filter(ArchivedQueueEntry.status == status_filter)
+        
+        # Получаем записи
+        old_entries = query.limit(100).all()  # Ограничиваем для предварительного просмотра
+        total_count = query.count()
+        
+        preview_entries = []
+        for entry in old_entries:
+            preview_entries.append({
+                "id": entry.id,
+                "original_id": entry.original_id,
+                "full_name": entry.full_name,
+                "status": entry.status.value if entry.status else None,
+                "archived_at": entry.archived_at.isoformat() if entry.archived_at else None,
+                "archive_reason": entry.archive_reason
+            })
+        
+        return {
+            "success": True,
+            "total_entries_to_delete": total_count,
+            "preview_entries": preview_entries,
+            "cutoff_date": cutoff_date.isoformat(),
+            "days_old": days_old,
+            "status_filter": status_filter,
+            "preview_limit": len(preview_entries)
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка предварительного просмотра очистки: {e}")
+        raise HTTPException(status_code=500, detail=f"Error previewing cleanup: {str(e)}")
 
 # === РОУТЫ ДЛЯ УПРАВЛЕНИЯ ВИДЕО ===
 
