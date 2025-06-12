@@ -43,10 +43,10 @@ class GoogleSheetsService:
             credentials_paths = [
                 "credentials.json",
                 "/app/credentials.json", 
-                "/app/focus-strand-462605-u4-ef29335428f3.json",
-                "/app/focus-strand-462605-u4-6a9380b9548c.json",  # Добавляем новый файл
-                "focus-strand-462605-u4-ef29335428f3.json",
-                "focus-strand-462605-u4-6a9380b9548c.json"
+                "/app/focus-strand-462605-u4-591149cd753b.json",
+                "/app/focus-strand-462605-u4-591149cd753b.json",  # Добавляем новый файл
+                "focus-strand-462605-u4-591149cd753b.json",
+                "focus-strand-462605-u4-591149cd753b.json"
             ]
             
             credentials_path = None

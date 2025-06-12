@@ -242,6 +242,27 @@ const EmployeeStatusControl = () => {
     return statusMap[statusValue] || t('employeeStatus.unknown');
   };
 
+  // Функция для перевода образовательных программ
+  const translatePrograms = (programs) => {
+    if (!programs) return '-';
+    const programKeys = Array.isArray(programs) ? programs : [programs];
+    const translated = programKeys.map(program => {
+      const key = `publicQueueForm.programs.bachelor.${program}`; // Предполагаем бакалавриат по умолчанию
+      let translatedText = t(key);
+      if (translatedText === key) {
+        // Если перевод не найден в бакалавриате, проверяем магистратуру и докторантуру
+        const masterKey = `publicQueueForm.programs.master.${program}`;
+        const doctorateKey = `publicQueueForm.programs.doctorate.${program}`;
+        translatedText = t(masterKey) !== masterKey ? t(masterKey) : t(doctorateKey) !== doctorateKey ? t(doctorateKey) : program;
+      }
+      return translatedText;
+    });
+    return translated.join(', ');
+  };
+
+  if (loading) return <div className="employee-status-loading">{t('employeeStatus.loading')}</div>;
+  if (!status) return <div className="employee-status-error">{t('employeeStatus.errorLoading')}</div>;
+
   return (
     <div className="employee-status-control">
       <div className="status-header">
@@ -259,51 +280,39 @@ const EmployeeStatusControl = () => {
 
       {calledApplicant && (
         <div className="called-applicant">
-          <h4>Текущий абитуриент:</h4>
+          <h4>{t('admissionDashboard.currentApplicant')}:</h4>
           <div className="applicant-info">
-            <p><strong>Номер:</strong> {calledApplicant.queue_number}</p>
-            <p><strong>ФИО:</strong> {calledApplicant.full_name}</p>
-            <p><strong>Телефон:</strong> {calledApplicant.phone}</p>
-            <p><strong>Стол:</strong> {calledApplicant.employee_desk}</p>
-            {calledApplicant.speech && calledApplicant.speech.text && (
-              <p><strong>Объявление:</strong> {calledApplicant.speech.text}</p>
-            )}
+            <p><strong>{t('admissionDashboard.number')}:</strong> {calledApplicant.queue_number}</p>
+            <p><strong>{t('admissionDashboard.fullName')}:</strong> {calledApplicant.full_name}</p>
+            <p><strong>{t('admissionDashboard.phone')}:</strong> {calledApplicant.phone}</p>
+            <p><strong>{t('admissionDashboard.desk')}:</strong> {calledApplicant.employee_desk}</p>
+            <p><strong>{t('admissionDashboard.program')}:</strong> {translatePrograms(calledApplicant.programs)}</p>
+            <p><strong>{t('admissionDashboard.announcement')}:</strong> 
+              {t('admissionDashboard.announcementTemplate', {
+                queue: calledApplicant.queue_number,
+                desk: calledApplicant.employee_desk
+              })}
+            </p>
           </div>
         </div>
       )}
 
       <div className="status-actions">
         {status.status === 'offline' && (
-          <button
-            className="btn btn-success"
-            onClick={handleStartWork}
-            disabled={actionLoading}
-          >
-            {actionLoading ? 'Начинаем работу...' : t('employeeStatus.startWork')}
+          <button className="btn btn-success" onClick={handleStartWork} disabled={actionLoading}>
+            {actionLoading ? t('employeeStatus.starting') : t('employeeStatus.startWork')}
           </button>
         )}
 
         {status.status === 'available' && !calledApplicant && (
           <>
-            <button
-              className="btn btn-info"
-              onClick={handleCallNext}
-              disabled={actionLoading}
-            >
-              {actionLoading ? 'Вызываем...' : 'Вызвать следующего вручную'}
+            <button className="btn btn-info" onClick={handleCallNext} disabled={actionLoading}>
+              {actionLoading ? t('employeeStatus.calling') : t('employeeStatus.callNext')}
             </button>
-            <button
-              className="btn btn-warning"
-              onClick={handlePauseWork}
-              disabled={actionLoading}
-            >
+            <button className="btn btn-warning" onClick={handlePauseWork} disabled={actionLoading}>
               {t('employeeStatus.pauseWork')}
             </button>
-            <button
-              className="btn btn-secondary"
-              onClick={handleFinishWork}
-              disabled={actionLoading}
-            >
+            <button className="btn btn-secondary" onClick={handleFinishWork} disabled={actionLoading}>
               {t('employeeStatus.finishWork')}
             </button>
           </>
@@ -312,35 +321,20 @@ const EmployeeStatusControl = () => {
         {/* 🔥 НОВЫЙ БЛОК: Кнопки во время обработки абитуриента */}
         {(status.status === 'busy' || calledApplicant) && (
           <div className="current-applicant-actions">
-            <button
-              className="btn btn-success"
-              onClick={handleCompleteApplicant}
-              disabled={actionLoading}
-            >
-              {actionLoading ? 'Завершаем...' : 'Завершить с текущим'}
+            <button className="btn btn-success" onClick={handleCompleteApplicant} disabled={actionLoading}>
+              {t('admissionDashboard.completeCurrent')}
             </button>
-            
-            {/* 🆕 КНОПКА ПАУЗЫ ВО ВРЕМЯ ОБРАБОТКИ */}
-            <button
-              className="btn btn-warning"
-              onClick={handlePauseWork}
-              disabled={actionLoading}
-              title="Уйти на перерыв после завершения с текущим абитуриентом"
-            >
-              {actionLoading ? 'Пауза...' : '⏸️ Пауза после завершения'}
+            <button className="btn btn-warning" onClick={handlePauseWork} disabled={actionLoading}>
+              {t('admissionDashboard.pauseAfterComplete')}
             </button>
           </div>
         )}
 
         {status.status === 'paused' && (
           <div className="paused-actions">
-            <p className="pause-info">🔔 На паузе. Автовызов отключен.</p>
-            <button
-              className="btn btn-primary"
-              onClick={handleResumeWork}
-              disabled={actionLoading}
-            >
-              {actionLoading ? 'Возобновляем...' : t('employeeStatus.resumeWork')}
+            <p className="pause-info">{t('employeeStatus.pausedMessage')}</p>
+            <button className="btn btn-primary" onClick={handleResumeWork} disabled={actionLoading}>
+              {t('employeeStatus.resumeWork')}
             </button>
             <button
               className="btn btn-secondary"

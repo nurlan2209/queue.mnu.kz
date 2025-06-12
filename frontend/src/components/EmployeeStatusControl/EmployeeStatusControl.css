@@ -1,10 +1,8 @@
-/* EmployeeStatusControl.css - Обновленные стили */
-
 .employee-status-control {
-  background: #fff;
+  background: #ffffff;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-bottom: 24px;
 }
 
@@ -14,12 +12,12 @@
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid #e0e0e0;
 }
 
 .status-header h3 {
   margin: 0;
-  color: #333;
+  color: #2c3e50;
   font-size: 1.5rem;
   font-weight: 600;
 }
@@ -34,36 +32,36 @@
 }
 
 .status-indicator.status-available {
-  background-color: #d4edda;
-  color: #155724;
-  border: 2px solid #c3e6cb;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 2px solid #c8e6c9;
 }
 
 .status-indicator.status-busy {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 2px solid #f5c6cb;
+  background-color: #ffebee;
+  color: #c62828;
+  border: 2px solid #ef9a9a;
 }
 
 .status-indicator.status-paused {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 2px solid #ffeaa7;
+  background-color: #fffde7;
+  color: #f9a825;
+  border: 2px solid #fff59d;
 }
 
-.status-indicator.status-offline {
-  background-color: #e2e3e5;
-  color: #383d41;
-  border: 2px solid #d6d8db;
+.status-indicator.status-offline {  
+  background-color: #eceff1;
+  color: #455a64;
+  border: 2px solid #cfd8dc;
 }
 
 .called-applicant {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #eceff1 0%, #cfd8dc 100%);
+  color: #2c3e50;
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .called-applicant h4 {
@@ -82,9 +80,9 @@
 .applicant-info p {
   margin: 0;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.8);
   border-radius: 8px;
-  backdrop-filter: blur(10px);
+  border: 1px solid #e0e0e0;
 }
 
 .applicant-info strong {
@@ -92,6 +90,7 @@
   font-size: 12px;
   opacity: 0.9;
   margin-bottom: 4px;
+  color: #7f8c8d;
 }
 
 .status-actions {
@@ -100,14 +99,14 @@
   gap: 16px;
 }
 
-/* 🆕 НОВЫЕ СТИЛИ для действий с текущим абитуриентом */
+/* НОВЫЕ СТИЛИ для действий с текущим абитуриентом */
 .current-applicant-actions {
   display: flex;
   gap: 12px;
   padding: 16px;
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  background: linear-gradient(135deg, #f5f7fa 0%, #e0e7f0 100%);
   border-radius: 12px;
-  border: 2px solid #ff9a56;
+  border: 2px solid #d1d9e6;
 }
 
 .current-applicant-actions button {
@@ -119,34 +118,34 @@
 }
 
 .current-applicant-actions .btn-success {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #4caf50 0%, #81c784 100%);
   border: none;
   color: white;
 }
 
 .current-applicant-actions .btn-success:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.2);
 }
 
 .current-applicant-actions .btn-warning {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(135deg, #ffca28 0%, #ffd54f 100%);
   border: none;
-  color: white;
+  color: #2c3e50;
 }
 
 .current-applicant-actions .btn-warning:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(250, 248, 112, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 202, 40, 0.2);
 }
 
-/* 🔔 СТИЛИ для паузы */
+/* СТИЛИ для паузы */
 .paused-actions {
   text-align: center;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #eceff1 0%, #cfd8dc 100%);
   border-radius: 12px;
-  color: white;
+  color: #2c3e50;
 }
 
 .pause-info {
@@ -154,6 +153,7 @@
   font-size: 16px;
   font-weight: 600;
   opacity: 0.9;
+  color: #7f8c8d;
 }
 
 .paused-actions button {
@@ -185,48 +185,53 @@
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+  background: linear-gradient(135deg, #4caf50 0%, #81c784 100%);
   color: white;
 }
 
 .btn-success:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(86, 171, 47, 0.4);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.2);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #42a5f5 0%, #90caf9 100%);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(66, 165, 245, 0.2);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #ffca28 0%, #ffd54f 100%);
+  color: #2c3e50;
 }
 
 .btn-warning:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(249, 251, 147, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 202, 40, 0.2);
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, #485563 0%, #29323c 100%);
+  background: linear-gradient(135deg, #78909c 0%, #b0bec5 100%);
   color: white;
 }
 
 .btn-secondary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(72, 85, 99, 0.4);
+  box-shadow: 0 6px 20px rgba(120, 144, 156, 0.2);
 }
 
 .btn-info {
-  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  background: linear-gradient(135deg, #42a5f5 0%, #90caf9 100%);
   color: white;
 }
 
 .btn-info:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(116, 185, 255, 0.4);
+  box-shadow: 0 6px 20px rgba(66, 165, 245, 0.2);
 }
 
 /* Алерты */
@@ -238,9 +243,9 @@
 }
 
 .alert-danger {
-  background: linear-gradient(135deg, #ff7675 0%, #fd79a8 100%);
+  background: linear-gradient(135deg, #ef9a9a 0%, #f44336 100%);
   color: white;
-  border: 2px solid #e84393;
+  border: 2px solid #e57373;
 }
 
 /* Загрузка и ошибки */
@@ -248,18 +253,18 @@
 .employee-status-error {
   text-align: center;
   padding: 40px 20px;
-  background: #f8f9fa;
+  background: #f5f5f5;
   border-radius: 12px;
-  color: #6c757d;
+  color: #7f8c8d;
   font-size: 16px;
 }
 
 .employee-status-error {
-  background: linear-gradient(135deg, #ff7675 0%, #fd79a8 100%);
+  background: linear-gradient(135deg, #ef9a9a 0%, #f44336 100%);
   color: white;
 }
 
-/* 🎵 АНИМАЦИИ */
+/* АНИМАЦИИ */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
@@ -269,7 +274,7 @@
   animation: pulse 2s infinite;
 }
 
-/* 📱 RESPONSIVE */
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .employee-status-control {
     padding: 16px;
