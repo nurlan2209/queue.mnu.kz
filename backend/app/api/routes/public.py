@@ -124,16 +124,18 @@ def check_queue_by_name(
     estimated_time = None
     
     if queue_entry.status == QueueStatus.WAITING:
-        # Позиция = количество людей со статусом WAITING и с меньшим номером + 1
-        position = db.query(QueueEntry).filter(
+        # ИСПРАВЛЕНИЕ: Считаем только людей, записанных к ТОМУ ЖЕ сотруднику
+        # и с меньшим номером в очереди
+        people_ahead = db.query(QueueEntry).filter(
             QueueEntry.status == QueueStatus.WAITING,
+            QueueEntry.assigned_employee_name == queue_entry.assigned_employee_name,  # 🔥 ДОБАВЛЕНО
             QueueEntry.queue_number < queue_entry.queue_number
-        ).count() + 1
+        ).count()
         
-        # Кол-во людей впереди = позиция - 1
-        people_ahead = position - 1
+        # Позиция = количество людей впереди + 1
+        position = people_ahead + 1
         
-        # Примерное время ожидания: 5 минут на человека
+        # Примерное время ожидания: 5 минут на человека (только для этого сотрудника)
         estimated_time = people_ahead * 5
     
     # Формируем ответ с дополнительными данными

@@ -37,4 +37,5 @@ yarn-error.log
 *.swp
 *.swo
 
-credentials.jsonbackend/focus-strand-*.json
+credentials.json
+backend/focus-strand-*.json
