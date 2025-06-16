@@ -288,13 +288,6 @@ const QueueList = () => {
           >
             {exportLoading ? 'Экспорт...' : t('queueList.exportButton')}
           </button>
-          
-          <button 
-            className="btn btn-success export-btn google-sheets-btn" 
-            onClick={handleOpenGoogleSheetsModal}
-          >
-            📊 Экспорт в Google Sheets
-          </button>
         </div>
       </div>
 

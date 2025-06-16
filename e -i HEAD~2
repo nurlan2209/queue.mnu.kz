@@ -1,0 +1,29 @@
+[33m6623a68[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m add(adminer with sheets): and add new page for employees2
+[33m8b67c1e[m add(adminer with sheets): and add new page for employees
+[33mf84d2fc[m[33m ([m[1;31morigin/master[m[33m)[m add(sync_table): 100%
+[33m43e4b68[m add(sync_table): 50%
+[33m0b0069b[m update(publicqueue): исправлена и изменена логика отправки заявки
+[33m74a1a8c[m fix(queue)
+[33m2fd65b4[m update for employees
+[33m28491fc[m fix(display)
+[33m293e4ef[m ticket gotov
+[33mb9d95cc[m fix(display and voice)
+[33m0ef5c54[m fix(display)
+[33m582da79[m fix(display)
+[33m1b58528[m process
+[33mb02cb3a[m fix(recaptcha): обновлен
+[33m3969e2b[m new design 40%
+[33me984a9c[m new design
+[33m69f2d1e[m new design 40%
+[33m2101fdd[m fix
+[33m47a6131[m fix(excel and filter admin): ексель исправлен также фильтр админа
+[33m684a279[m fix(translate): перевод для капчи
+[33me3185f2[m repeat last commit
+[33m93e1f73[m feat(realtime display): добавлен синтезатор голоса
+[33mc19a46c[m feat(captcha): капча обновлен до v3
+[33mabfadb8[m feat(adminer): возможность просмотра бд
+[33ma209837[m feat(translate): доработки с переводом
+[33mc2f9005[m feat(admin_page): доработки с Notion
+[33me1c68f8[m feat(publicqueue): добавлен статус сотрудника в форме
+[33m85da978[m fix(form_phone): шаблон номера +7 и тд.
+[33m1ce1208[m fix(page admission): delete filter for employees

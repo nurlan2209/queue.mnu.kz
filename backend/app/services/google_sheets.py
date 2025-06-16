@@ -14,7 +14,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 GOOGLE_SHEETS_ID = "1kh8mEKZHSo3vZAK7Z6FoH12Y03WJXhnJx5xA4AoMTP8"
-SHEET_NAME = "Queue Data"  # Используем правильный лист
+SHEET_NAME = "Queue Data" 
 
 STATUS_TRANSLATIONS = {
     "waiting": "Ожидание",
